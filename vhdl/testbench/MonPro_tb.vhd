@@ -17,11 +17,11 @@ architecture bahavioral of MonPro_tb is
     signal clk         : std_logic := '0';
     signal resetn      : std_logic := '0';
     signal start       : std_logic;
-    signal a           : std_logic_vector(k downto 0);
-    signal b           : std_logic_vector(k downto 0);
-    signal n           : std_logic_vector(k downto 0);
+    signal a           : std_logic_vector(k -1 downto 0);
+    signal b           : std_logic_vector(k -1 downto 0);
+    signal n           : std_logic_vector(k -1 downto 0);
     signal done        : std_logic;
-    signal u           : std_logic_vector(k downto 0);
+    signal u           : std_logic_vector(k -1 downto 0);
 
 begin
     -- Connect dut
@@ -52,6 +52,9 @@ begin
     stimuli_proc: process
     begin
         wait for 1*RESET_TIME;
+        a <= x"0000_0000_0000_0000_0000_0000_0000_0003";
+        b <= x"0000_0000_0000_0000_0000_0000_0000_0003";
+        n <= x"0000_0000_0000_0000_0000_0000_0000_000b";
 
         wait for 1*CLK_PERIOD;
 
