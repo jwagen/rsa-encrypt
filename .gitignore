@@ -3,3 +3,6 @@
 
 # Vim
 *.swp
+
+# vivado project dir
+vhdl/rsa_core/
