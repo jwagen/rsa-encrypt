@@ -1,0 +1,12 @@
+#-----------------------------------------------------------
+# Vivado v2017.3 (64-bit)
+# SW Build 2018833 on Wed Oct  4 19:58:07 MDT 2017
+# IP Build 2016188 on Wed Oct  4 21:52:56 MDT 2017
+# Start of session at: Sat Oct 21 11:40:53 2017
+# Process ID: 28004
+# Current directory: /home/johannes/Dropbox/ntnu/H17/TFE4141 Design av digitale system 1/term-project/vhdl
+# Command line: vivado -mode batch -source build.tcl
+# Log file: /home/johannes/Dropbox/ntnu/H17/TFE4141 Design av digitale system 1/term-project/vhdl/vivado.log
+# Journal file: /home/johannes/Dropbox/ntnu/H17/TFE4141 Design av digitale system 1/term-project/vhdl/vivado.jou
+#-----------------------------------------------------------
+source build.tcl
