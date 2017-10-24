@@ -51,27 +51,28 @@ begin
              );
     fsm_SynchProc : process (resetn, clk)
     begin
-        if (resetn = '1') then
+        if (resetn = '0') then
             current_state <= IDLE;
             --next_state <= IDLE;
-            loop_counter <= 0;
             output <= (others => '0');
-            done <= '0';
         elsif rising_edge(clk) then
             current_state <= next_state;
         end if;
     end process fsm_SynchProc;
     
-    fsm_CombProc : process (current_state)
+    fsm_CombProc : process (current_state, start, mp_done)
     begin
         case (current_state) is
         when IDLE       =>
+            done <= '0';
             if start = '1' then
                 next_state <= PREPARE;
             else
                 next_state <= IDLE;
             end if;
         when PREPARE      =>
+            loop_counter <= 0;
+            done <= '0';
             x_mon <= r;
             mp_a <= M;
             mp_b <= r_2;
@@ -84,12 +85,34 @@ begin
                 next_state <= PREPARE;
             end if;
         when MONPROLOOP =>
-            done <= '1';
-            next_state <= MONPROLOOP;
-        when POSTX      =>
-        when FINISHED   =>
-        when others     => --Should NOT happen
+            -- TODO: Actually make calculation here
+            if mp_done = '1' then
+                loop_counter <= loop_counter + 1;
+            end if;
+            
             done <= '0';
+            if loop_counter = k-1 then 
+                next_state <= POSTX;
+            else
+                next_state <= MONPROLOOP;
+            end if;
+        when POSTX      =>
+            done <= '0';
+            mp_a <= x_mon;
+            mp_b <= (others => '0'); -- TODO: Should be 1
+            mp_n <= n;
+            mp_start <= '1';
+            if mp_done = '1' then
+            M_mon <= mp_u; -- Maybe this should be moved
+            next_state <= FINISHED;
+        else
+            next_state <= POSTX;
+        end if;
+        when FINISHED   =>
+            done <= '1';
+            output <= M_mon;
+            next_state <= IDLE;
+        when others     => --Should NOT happen
             next_state <= IDLE;
         end case;
     end process fsm_CombProc;

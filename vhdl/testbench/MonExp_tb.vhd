@@ -47,6 +47,7 @@ begin
     -- Reset
     reset_proc: process
     begin
+        
         wait for RESET_TIME;
         resetn <= '1';
         wait;
@@ -55,6 +56,7 @@ begin
     -- Stimuli
     stimuli_proc: process
     begin
+        start <= '0';
         wait for 1*RESET_TIME;
         M <= x"0000_0000_0000_0000_0000_0000_0000_0003";
         e <= x"0000_0000_0000_0000_0000_0000_0000_0003";
@@ -66,12 +68,11 @@ begin
         start <= '1';
         wait for 1*CLK_PERIOD;
         start <= '0';
-        --wait for 130*CLK_PERIOD;
-
-        assert done = '1'report "Done not 1 after full count" severity failure;
         
-
-
+        wait for 128*CLK_PERIOD; -- Waiting for precalculations
+        wait for 128*128*CLK_PERIOD;  -- Waiting for main loop
+        wait for 128*CLK_PERIOD;  -- Waiting for postcalculations
+        wait until done = '1';
         --End simulation 
 		assert false report "Test complete" severity failure;
     end process;
