@@ -1,4 +1,4 @@
---Montgomery product multiplier
+--Montgomery exponential calculation
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -26,7 +26,8 @@ end MonExp;
 architecture circuit of MonExp is
     signal loop_counter : natural range 0 to k-1 := 0;
     type state is (IDLE, PREPARE, MONPROLOOP, POSTX, FINISHED); --TODO
-    signal current_state, next_state: state;
+    signal current_state: state;
+    signal next_state: state;
     -- Connections to MonPro
     signal mp_start       : std_logic;
     signal mp_a           : std_logic_vector(k -1 downto 0);
@@ -52,7 +53,7 @@ begin
     begin
         if (resetn = '1') then
             current_state <= IDLE;
-            next_state <= IDLE;
+            --next_state <= IDLE;
             loop_counter <= 0;
             output <= (others => '0');
             done <= '0';
@@ -76,13 +77,15 @@ begin
             mp_b <= r_2;
             mp_n <= n;
             mp_start <= '1';
-            if done = '1' then
+            if mp_done = '1' then
                 M_mon <= mp_u; -- Maybe this should be moved
                 next_state <= MONPROLOOP;
             else
                 next_state <= PREPARE;
             end if;
         when MONPROLOOP =>
+            done <= '1';
+            next_state <= MONPROLOOP;
         when POSTX      =>
         when FINISHED   =>
         when others     => --Should NOT happen
