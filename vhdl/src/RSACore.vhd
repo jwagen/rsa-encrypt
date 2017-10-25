@@ -34,7 +34,7 @@ architecture circuit of RSACore is
     signal me_done        : std_logic;
     signal me_output      : std_logic_vector(k -1 downto 0);
     -- Control data
-    type state is (INIT, LOADCONF, WAITFORMSG, LOADINGMSG, CALC, UNLOADANS);
+    type state is (INIT, LOADCONF, WAITFORMSG, LOADINGMSG, STARTCALC, CALC, UNLOADANS);
     signal current_state: state;
     signal next_state: state;
     signal loop_counter : natural range 0 to params-1 := 0;
@@ -72,6 +72,7 @@ begin
                  when INIT       =>
                     CoreFinished <= '1';
                     count <= '0';
+                    me_start <= '0';
                     if InitRsa = '1' then
                         next_state <= LOADCONF;
                     else
@@ -80,6 +81,7 @@ begin
                  when LOADCONF   =>
                     CoreFinished <= '0';
                     count <= '1';
+                    me_start <= '0';
                     if loop_counter = params - 1 then
                         next_state <= WAITFORMSG;
                     else
@@ -88,6 +90,7 @@ begin
                  when WAITFORMSG =>
                     CoreFinished <= '1';
                     count <= '0';
+                    me_start <= '0';
                      if StartRsa = '1' then
                          next_state <= LOADINGMSG;
                      else
@@ -96,14 +99,21 @@ begin
                  when LOADINGMSG =>
                     CoreFinished <= '0';
                     count <= '1';
+                    me_start <= '0';
                     if loop_counter = msg_parts - 1 then
-                        next_state <= CALC;
+                        next_state <= STARTCALC;
                     else
                         next_state <= LOADINGMSG;
                     end if;
+                 when STARTCALC       =>
+                       CoreFinished <= '0';
+                       count <= '0';
+                       me_start <= '1';
+                       next_state <= CALC;
                  when CALC       =>
                     CoreFinished <= '0';
                     count <= '0';
+                    me_start <= '0';
                     if me_done = '1' then
                         next_state <= UNLOADANS;
                     else
@@ -112,6 +122,7 @@ begin
                  when UNLOADANS  =>
                     CoreFinished <= '1';
                     count <= '1';
+                    me_start <= '0';
                     if loop_counter = msg_parts - 1 then
                         next_state <= WAITFORMSG;
                     else
