@@ -1,5 +1,14 @@
 -- Top level disign of rsa crpyto core
 
+--TODO:
+-- * Should enter LOADCONF one cycle earlier
+-- * Perhaps outputs should be changed/set when changing states, not in the states? Would fix both the one above and counters going one too far.
+-- * Use rising_edge on InitRsa and StartRsa?
+-- * Need to find out how to send the two extra parameters in simulation
+-- * All states should be able to return to init(add if InitRsa to each statement)
+-- * Trouble when reconfiguring?
+-- * Change every clocked process to use rising_edge()
+
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -35,11 +44,93 @@ architecture circuit of RSACore is
     signal me_output      : std_logic_vector(k -1 downto 0);
     -- Control data
     type state is (INIT, LOADCONF, WAITFORMSG, LOADINGMSG, STARTCALC, CALC, UNLOADANS);
-    signal current_state: state;
-    signal next_state: state;
-    signal loop_counter : natural range 0 to params-1 := 0;
+    signal current_state  : state;
+    signal next_state     : state;
+    signal loop_counter   : natural range 0 to params-1 := 0;
     signal count          : std_logic;
+    -- Config registers
+    signal config_reg_en   : std_logic;
+    signal e_r, e_nxt     : std_logic_vector(k-1 downto 0);
+    signal n_r, n_nxt     : std_logic_vector(k-1 downto 0);
+    signal r_r, r_nxt     : std_logic_vector(k-1 downto 0);
+    signal r_2_r, r_2_nxt     : std_logic_vector(k-1 downto 0);
+    -- Message registers
+    signal M_reg_en   : std_logic;
+    signal M_r, M_nxt     : std_logic_vector(k-1 downto 0);
+    -- Output registers
+    --signal M_reg_en   : std_logic;
+    signal result_r, result_nxt: std_logic_vector(127 downto 0);
+    Signal output_reg_en   : std_logic;
+    Signal output_reg_load : std_logic;
+
+    --signal M_r, M_nxt     : std_logic_vector(k-1 downto 0);
+    
 begin
+
+  -- Register e_r, n_r, r_r and r_2_r
+  -- ***************************************************************************
+  process (clk, resetn) begin
+    if(resetn = '0') then
+      e_r <= (others => '0');
+      n_r <= (others => '0'); 
+      r_r <= (others => '0');
+      r_2_r <= (others => '0');     
+    elsif(clk'event and clk='1') then
+      if(config_reg_en ='1') then
+        e_r <= e_nxt;
+        n_r <= n_nxt;
+        r_r <= r_nxt;
+        r_2_r <= r_2_nxt;        
+      end if;
+    end if;
+  end process;
+    
+  process (DataIn, e_r, n_r, r_r, r_2_r) begin
+    r_2_nxt <= DataIn & r_2_r(127 downto 32);
+    r_nxt <= r_2_r(31 downto 0) & r_r(127 downto 32);
+    n_nxt <= r_r(31 downto 0) & n_r(127 downto 32);
+    e_nxt <= n_r(31 downto 0) & e_r(127 downto 32);
+  end process; 
+  -- ***************************************************************************
+  -- Register M_r
+  -- ***************************************************************************
+  process (clk, resetn) begin
+    if(resetn = '0') then
+      M_r <= (others => '0');    
+    elsif(clk'event and clk='1') then
+      if(M_reg_en ='1') then
+        M_r <= M_nxt;     
+      end if;
+    end if;
+  end process;
+    
+  process (DataIn, M_r) begin
+    M_nxt <= DataIn & M_r(127 downto 32);
+  end process; 
+-- ***************************************************************************
+    -- Register result_r
+    -- Logic for shifting out the content of result_r to data_out
+    -- ***************************************************************************
+    process (clk, resetn) begin
+      if(resetn = '0') then
+        result_r <= (others => '0');     
+      elsif(clk'event and clk='1') then
+        if(output_reg_en ='1') then
+          result_r <= result_nxt;       
+        end if;
+      end if;
+    end process;
+    
+    process (result_r, output_reg_load) begin
+      if(output_reg_load = '1') then
+        
+      else
+        result_nxt <= x"00000000" & result_r(127 downto 32);
+      end if;
+    end process;
+    
+    DataOut <= result_r(31 downto 0);
+-- ***************************************************************************
     me : entity work.MonExp
     port map (
         clk         => clk,          
@@ -73,26 +164,37 @@ begin
                     CoreFinished <= '1';
                     count <= '0';
                     me_start <= '0';
+                    M_reg_en <= '0';
                     if InitRsa = '1' then
+                        config_reg_en <= '1';
+                        count <= '1';
                         next_state <= LOADCONF;
                     else
                         next_state <= INIT;
                     end if;
                  when LOADCONF   =>
+                    config_reg_en <= '1';
                     CoreFinished <= '0';
                     count <= '1';
                     me_start <= '0';
                     if loop_counter = params - 1 then
+                        count <= '0';
                         next_state <= WAITFORMSG;
                     else
                         next_state <= LOADCONF;
                     end if;
                  when WAITFORMSG =>
+                    config_reg_en <= '0';
                     CoreFinished <= '1';
                     count <= '0';
                     me_start <= '0';
+                    M_reg_en <= '1';
                      if StartRsa = '1' then
                          next_state <= LOADINGMSG;
+                     elsif InitRsa = '1' then -- TODO: Check this
+                         config_reg_en <= '1';
+                         count <= '1';
+                         next_state <= LOADCONF;
                      else
                          next_state <= WAITFORMSG;
                      end if;
@@ -101,6 +203,8 @@ begin
                     count <= '1';
                     me_start <= '0';
                     if loop_counter = msg_parts - 1 then
+                        count <= '0';
+                        M_reg_en <= '0';
                         next_state <= STARTCALC;
                     else
                         next_state <= LOADINGMSG;
