@@ -1,0 +1,150 @@
+#-----------------------------------------------------------
+# Vivado v2017.2 (64-bit)
+# SW Build 1909853 on Thu Jun 15 18:39:09 MDT 2017
+# IP Build 1909766 on Thu Jun 15 19:58:00 MDT 2017
+# Start of session at: Tue Oct 24 14:04:15 2017
+# Process ID: 10100
+# Current directory: E:/NTNU/08semester/TFE4141/termProject/git/rsa-encrypt/vhdl
+# Command line: vivado.exe -mode batch -source build.tcl
+# Log file: E:/NTNU/08semester/TFE4141/termProject/git/rsa-encrypt/vhdl/vivado.log
+# Journal file: E:/NTNU/08semester/TFE4141/termProject/git/rsa-encrypt/vhdl\vivado.jou
+#-----------------------------------------------------------
+source build.tcl
+# set origin_dir "."
+# if { [info exists ::origin_dir_loc] } {
+#   set origin_dir $::origin_dir_loc
+# }
+# variable script_file
+# set script_file "build.tcl"
+# proc help {} {
+#   variable script_file
+#   puts "\nDescription:"
+#   puts "Recreate a Vivado project from this script. The created project will be"
+#   puts "functionally equivalent to the original project for which this script was"
+#   puts "generated. The script contains commands for creating a project, filesets,"
+#   puts "runs, adding/importing sources and setting properties on various objects.\n"
+#   puts "Syntax:"
+#   puts "$script_file"
+#   puts "$script_file -tclargs \[--origin_dir <path>\]"
+#   puts "$script_file -tclargs \[--help\]\n"
+#   puts "Usage:"
+#   puts "Name                   Description"
+#   puts "-------------------------------------------------------------------------"
+#   puts "\[--origin_dir <path>\]  Determine source file paths wrt this path. Default"
+#   puts "                       origin_dir path value is \".\", otherwise, the value"
+#   puts "                       that was set with the \"-paths_relative_to\" switch"
+#   puts "                       when this script was generated.\n"
+#   puts "\[--help\]               Print help information for this script"
+#   puts "-------------------------------------------------------------------------\n"
+#   exit 0
+# }
+# if { $::argc > 0 } {
+#   for {set i 0} {$i < [llength $::argc]} {incr i} {
+#     set option [string trim [lindex $::argv $i]]
+#     switch -regexp -- $option {
+#       "--origin_dir" { incr i; set origin_dir [lindex $::argv $i] }
+#       "--help"       { help }
+#       default {
+#         if { [regexp {^-} $option] } {
+#           puts "ERROR: Unknown option '$option' specified, please type '$script_file -tclargs --help' for usage info.\n"
+#           return 1
+#         }
+#       }
+#     }
+#   }
+# }
+# set orig_proj_dir "[file normalize "$origin_dir/rsa_core"]"
+# create_project rsa_core ./rsa_core -part xc7z030sbv485-1
+# set proj_dir [get_property directory [current_project]]
+# set obj [get_projects rsa_core]
+# set_property -name "default_lib" -value "xil_defaultlib" -objects $obj
+# set_property -name "ip_cache_permissions" -value "read write" -objects $obj
+# set_property -name "ip_output_repo" -value "$proj_dir/rsa_core.cache/ip" -objects $obj
+# set_property -name "part" -value "xc7z030sbv485-1" -objects $obj
+# set_property -name "sim.ip.auto_export_scripts" -value "1" -objects $obj
+# set_property -name "simulator_language" -value "VHDL" -objects $obj
+# set_property -name "target_language" -value "VHDL" -objects $obj
+# if {[string equal [get_filesets -quiet sources_1] ""]} {
+#   create_fileset -srcset sources_1
+# }
+# set obj [get_filesets sources_1]
+# set files [list \
+#  "[file normalize "$origin_dir/src/MonPro.vhd"]"\
+#  "[file normalize "$origin_dir/src/RSACore.vhd"]"\
+#  "[file normalize "$origin_dir/src/MonExp.vhd"]"\
+# ]
+# add_files -norecurse -fileset $obj $files
+# set file "$origin_dir/src/MonPro.vhd"
+# set file [file normalize $file]
+# set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+# set_property -name "file_type" -value "VHDL 2008" -objects $file_obj
+# set file "$origin_dir/src/RSACore.vhd"
+# set file [file normalize $file]
+# set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+# set_property -name "file_type" -value "VHDL 2008" -objects $file_obj
+# set_property -name "is_enabled" -value "0" -objects $file_obj
+# set file "$origin_dir/src/MonExp.vhd"
+# set file [file normalize $file]
+# set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+# set_property -name "file_type" -value "VHDL" -objects $file_obj
+# set obj [get_filesets sources_1]
+# set_property -name "top" -value "MonPro" -objects $obj
+# if {[string equal [get_filesets -quiet constrs_1] ""]} {
+#   create_fileset -constrset constrs_1
+# }
+# set obj [get_filesets constrs_1]
+# set file "[file normalize "$origin_dir/constrants/constrants.xdc"]"
+# set file_added [add_files -norecurse -fileset $obj $file]
+# set file "$origin_dir/constrants/constrants.xdc"
+# set file [file normalize $file]
+# set file_obj [get_files -of_objects [get_filesets constrs_1] [list "*$file"]]
+# set_property -name "file_type" -value "XDC" -objects $file_obj
+# set obj [get_filesets constrs_1]
+# if {[string equal [get_filesets -quiet sim_1] ""]} {
+#   create_fileset -simset sim_1
+# }
+# set obj [get_filesets sim_1]
+# set files [list \
+#  "[file normalize "$origin_dir/testbench/MonPro_tb.vhd"]"\
+#  "[file normalize "$origin_dir/testbench/RSAParameters.vhd"]"\
+#  "[file normalize "$origin_dir/testbench/CompDecl.vhd"]"\
+# ]
+# add_files -norecurse -fileset $obj $files
+# set file "$origin_dir/testbench/MonPro_tb.vhd"
+# set file [file normalize $file]
+# set file_obj [get_files -of_objects [get_filesets sim_1] [list "*$file"]]
+# set_property -name "file_type" -value "VHDL 2008" -objects $file_obj
+# set file "$origin_dir/testbench/RSAParameters.vhd"
+# set file [file normalize $file]
+# set file_obj [get_files -of_objects [get_filesets sim_1] [list "*$file"]]
+# set_property -name "file_type" -value "VHDL 2008" -objects $file_obj
+# set file "$origin_dir/testbench/CompDecl.vhd"
+# set file [file normalize $file]
+# set file_obj [get_files -of_objects [get_filesets sim_1] [list "*$file"]]
+# set_property -name "file_type" -value "VHDL 2008" -objects $file_obj
+# set obj [get_filesets sim_1]
+# set_property -name "top" -value "MonPro_tb" -objects $obj
+# if {[string equal [get_runs -quiet synth_1] ""]} {
+#   create_run -name synth_1 -part xc7z030sbv485-1 -flow {Vivado Synthesis 2017} -strategy "Vivado Synthesis Defaults" -constrset constrs_1
+# } else {
+#   set_property strategy "Vivado Synthesis Defaults" [get_runs synth_1]
+#   set_property flow "Vivado Synthesis 2017" [get_runs synth_1]
+# }
+# set obj [get_runs synth_1]
+# set_property -name "needs_refresh" -value "1" -objects $obj
+# set_property -name "part" -value "xc7z030sbv485-1" -objects $obj
+# current_run -synthesis [get_runs synth_1]
+# if {[string equal [get_runs -quiet impl_1] ""]} {
+#   create_run -name impl_1 -part xc7z030sbv485-1 -flow {Vivado Implementation 2017} -strategy "Vivado Implementation Defaults" -constrset constrs_1 -parent_run synth_1
+# } else {
+#   set_property strategy "Vivado Implementation Defaults" [get_runs impl_1]
+#   set_property flow "Vivado Implementation 2017" [get_runs impl_1]
+# }
+# set obj [get_runs impl_1]
+# set_property -name "part" -value "xc7z030sbv485-1" -objects $obj
+# set_property -name "steps.write_bitstream.args.readback_file" -value "0" -objects $obj
+# set_property -name "steps.write_bitstream.args.verbose" -value "0" -objects $obj
+# current_run -implementation [get_runs impl_1]
+# puts "INFO: Project created:rsa_core"
+INFO: Project created:rsa_core
+INFO: [Common 17-206] Exiting Vivado at Tue Oct 24 14:04:20 2017...
