@@ -8,6 +8,27 @@ entity MonPro_tb is
 end MonPro_tb;
 
 architecture bahavioral of MonPro_tb is
+
+	--Helper function that waits n amount of falling edges
+	procedure wait_until_n_falling_edges(
+		signal clk_signal : in std_logic;
+		n : in positive) is
+	begin
+		for i in 1 to n loop
+			wait until falling_edge(clk_signal);
+		end loop;
+	end procedure;
+
+	--Helper function that waits n amount of falling edges
+	procedure wait_until_n_rising_edges(
+		signal clk_signal : in std_logic;
+		n : in positive) is
+	begin
+		for i in 1 to n loop
+			wait until rising_edge(clk_signal);
+		end loop;
+	end procedure;
+
     --Clock parameters
     constant CLK_PERIOD : time := 10ns;
     constant RESET_TIME : time := 10ns;
@@ -51,19 +72,21 @@ begin
     -- Stimuli
     stimuli_proc: process
     begin
-        wait for 1*RESET_TIME;
         a <= x"0000_0000_0000_0000_0000_0000_0000_0003";
         b <= x"0000_0000_0000_0000_0000_0000_0000_0003";
-        n <= x"0000_0000_0000_0000_0000_0000_0000_000b";
+        n <= x"0000_0000_0000_0000_0000_0000_0000_0007";
+        
+        wait until resetn = '1';
 
-        wait for 1*CLK_PERIOD;
+        wait_until_n_falling_edges(clk, 2);
 
         start <= '1';
-        wait for 1*CLK_PERIOD;
+        wait_until_n_falling_edges(clk, 1);
         start <= '0';
-        wait for 130*CLK_PERIOD;
 
-        assert done = '1'report "Done not 1 after full count" severity failure;
+        wait until done = '1';
+
+        wait_until_n_falling_edges(clk, 5);
         
 
 

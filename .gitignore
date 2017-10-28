@@ -6,3 +6,6 @@
 
 # vivado project dir
 vhdl/rsa_core/
+*.jou
+*.log
+*.str
