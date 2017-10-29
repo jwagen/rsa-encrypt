@@ -1,5 +1,6 @@
+from __future__ import print_function 
 import click
-
+import random
 
 def getBit(a, n):
     """Get the nth bit from a"""
@@ -79,9 +80,14 @@ def testmonpro(a,b,n):
 @click.option('--private-key', type=int, help='Private exponent.')
 @click.option('-n', type=int, help='Modulo number.')
 @click.option('-k', type=int, default=128, help='Number of bits to use.')
+@click.option('-a', type=int, help='Multiplier for monpro.')
+@click.option('-b', type=int, help='Multiplier for monpro.')
 @click.option('--encrypt', is_flag=True, help='Encrypt the message.')
 @click.option('--decrypt', is_flag=True, help='Decrypt the message.')
-def cli(m, public_key, private_key, n, k, encrypt, decrypt):
+@click.option('--monpro', is_flag=True, help='Calculate the montgomery product of a * b r**-1 mod n.')
+@click.option('-x', is_flag=True, help='Output data as hex')
+@click.option('--loop', type=int, help='Loop through and generate random input data.')
+def cli(m, public_key, private_key, n, k, a, b, encrypt, decrypt, monpro, x, loop):
     """
     Command line interface for montgomery exponentiation.
     
@@ -91,21 +97,59 @@ def cli(m, public_key, private_key, n, k, encrypt, decrypt):
     Encrypted  12312311 , encrypted value  139608985220169980430515913107853261509 , decrypted value  12312311
     """
 
-    if encrypt and decrypt:
-        encrypted_message = monexp(m, public_key, n)
-        decrypted = monexp(encrypted_message, private_key, n)
+
+    if loop:
+        for i in range(1, loop):
+            a = random.randrange(2**k)
+            b = random.randrange(2**k)
+            n = random.randrange(1,2**k, 2)
+
+            awnser = 0
+            if encrypt:
+                awnser = monexp(a, b, n)
+
+
+            elif decrypt:
+                awnser = monexp(a, b, n)
+
+            elif monpro:
+                awnser = globals()['monpro'](a, b, n)
+
+            else :
+                print('Please select what operation to do')
+                return
+
+            if x:
+
+                print("{1:0{0}X} {2:0{0}X} {3:0{0}X} {4:0{0}X}".format(32, a, b, n, awnser))
+
+            else:
+                print(a, ' ', b, ' ', n, ' ', awnser)
+
+
+
+
+
+    else:
+        if encrypt and decrypt:
+            encrypted_message = monexp(m, public_key, n)
+            decrypted = monexp(encrypted_message, private_key, n)
+            
+            print("Encrypted ", m, ", encrypted value ", encrypted_message,", decrypted value ", decrypted)
+            return
         
-        print("Encrypted ", m, ", encrypted value ", encrypted_message,", decrypted value ", decrypted)
-        return
-    
-    elif encrypt:
-        encrypted_message = monexp(m, public_key, n)
-        print("Encrypted ", m, ", encrypted value ", encrypted_message)
+        elif encrypt:
+            encrypted_message = monexp(m, public_key, n)
+            print("Encrypted ", m, ", encrypted value ", encrypted_message)
 
 
-    elif decrypt:
-        decrypted = monexp(m, private_key, n)
-        print(", encrypted value ", m, ", decrypted value ", decrypted)
+        elif decrypt:
+            decrypted = monexp(m, private_key, n)
+            print(", encrypted value ", m, ", decrypted value ", decrypted)
+
+        elif monpro:
+            print(globals()['monpro'](a, b, n))
+
 
 
 

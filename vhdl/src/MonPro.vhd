@@ -26,7 +26,7 @@ entity MonPro is
 end MonPro;
 
 architecture circuit of MonPro is
-    type state_type is (LOOPING, SUBTRACTING, FINISHED, IDLE);
+    type state_type is (IDLE, LOOPING, SUBTRACTING, FINISHED);
     signal current_state, next_state: state_type;
     
 
@@ -97,52 +97,6 @@ begin
         end case;
     end process;
 
---    process(clk)
---    begin
---        -- Loop counter
---        if rising_edge(clk) then
---            if resetn = '0' then
---                -- Reset loop counter
---                loop_counter <= 0;
---                u <= (others => '0');
---            else
---                -- Initialize the system
---                if start = '1' then 
---                    loop_counter_done = '0';
---                    loop_counter_started <= '1';
---                end if;
---
---                -- Counter
---                if loop_counter_started = '1' then
---                    loop_counter <= loop_counter + 1;
---                end if;
---
---                -- Counter at max value
---                if loop_counter = k - 1 then
---                    loop_counter <= 0;
---                    loop_counter_started <= '0';
---                    loop_counter_done <= '1';
---                end if;
---                
---                -- TODO: Done should be delayed one clk cycle
---                if loop_counter_done = '1' then
---                    done <= '1';
---                    if u_reg >= n then
---                        u <= std_logic_vector(unsigned(u_reg) - unsigned(n));
---                    else
---                        u <= u_reg;
---                    end if;
---                else
---                    done <= '0';
---
---                end if;
---
---                u_reg <= u_reg_next;
---            end if;
---        end if;
---    end process;
---
---
 -- Set done output
     process(all)
         variable u_temp1 : std_logic_vector(k -1 downto 0);
@@ -150,9 +104,9 @@ begin
         variable u_temp3 : std_logic_vector(k -1 downto 0);
     begin
         if a(loop_counter) = '1' then
-            u_temp1 := std_logic_vector(unsigned(u) + unsigned(b));
+            u_temp1 := std_logic_vector(unsigned(u_reg) + unsigned(b));
         else
-            u_temp1 := u;
+            u_temp1 := u_reg;
         end if;
 
         if u_temp1(0) = '1' then

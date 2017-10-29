@@ -5,6 +5,7 @@
 *.swp
 
 # vivado project dir
+vhdl/.Xil/
 vhdl/rsa_core/
 *.jou
 *.log
