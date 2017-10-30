@@ -61,11 +61,17 @@ begin
     end process fsm_SynchProc;
     
     fsm_CombProc : process (current_state, start, mp_done)
+    variable loop_double_monpro : std_logic;
     begin
         case (current_state) is
         when IDLE       =>
             done <= '0';
             if start = '1' then
+                x_mon <= r;
+                mp_a <= M;
+                mp_b <= r_2;
+                mp_n <= n;
+                mp_start <= '1';
                 next_state <= PREPARE;
             else
                 next_state <= IDLE;
@@ -73,44 +79,66 @@ begin
         when PREPARE      =>
             loop_counter <= 0;
             done <= '0';
-            x_mon <= r;
-            mp_a <= M;
-            mp_b <= r_2;
-            mp_n <= n;
-            mp_start <= '1';
+            mp_start <= '0';
             if mp_done = '1' then
                 M_mon <= mp_u; -- Maybe this should be moved
+                mp_a <= x_mon;
+                mp_b <= x_mon;
+                mp_n <= n;
+                mp_start <= '1';
                 next_state <= MONPROLOOP;
             else
                 next_state <= PREPARE;
             end if;
         when MONPROLOOP =>
             -- TODO: Actually make calculation here
+            mp_start <= '0';
             if mp_done = '1' then
-                loop_counter <= loop_counter + 1;
+                x_mon <= mp_u;
+                if (e(loop_counter) = '1') and (loop_double_monpro = '0')  then 
+                    mp_a <= M_mon;
+                    mp_b <= x_mon;
+                    mp_n <= n;
+                    mp_start <= '1';
+                    loop_double_monpro := '1';
+                else
+                    mp_a <= x_mon;
+                    mp_b <= x_mon;
+                    mp_n <= n;
+                    mp_start <= '1';
+                    loop_double_monpro := '0';
+                end if;
+                if loop_double_monpro = '1' then
+                    loop_counter <= loop_counter;
+                else
+                    loop_counter <= loop_counter + 1;
+                end if;
+            else
+                mp_start <= '0'; -- Unnedeed
             end if;
             
             done <= '0';
             if loop_counter = k-1 then 
+                mp_a <= x_mon;
+                mp_b <= (others => '0');
+                mp_b(0) <= '1';
+                mp_n <= n;
+                mp_start <= '1';
                 next_state <= POSTX;
             else
                 next_state <= MONPROLOOP;
             end if;
         when POSTX      =>
             done <= '0';
-            mp_a <= x_mon;
-            mp_b <= (others => '0'); -- TODO: Should be 1
-            mp_n <= n;
-            mp_start <= '1';
+            mp_start <= '0';
             if mp_done = '1' then
-            M_mon <= mp_u; -- Maybe this should be moved
-            next_state <= FINISHED;
-        else
-            next_state <= POSTX;
+                done <= '1';
+                output <= mp_u;
+                next_state <= FINISHED;
+            else
+                next_state <= POSTX;
         end if;
         when FINISHED   =>
-            done <= '1';
-            output <= M_mon;
             next_state <= IDLE;
         when others     => --Should NOT happen
             next_state <= IDLE;
