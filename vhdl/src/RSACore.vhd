@@ -108,7 +108,7 @@ begin
     M_nxt <= DataIn & M_r(127 downto 32);
   end process; 
 -- ***************************************************************************
-    -- Register result_r
+    -- Register result_r for outputing data
     -- Logic for shifting out the content of result_r to data_out
     -- ***************************************************************************
     process (clk, resetn) begin
@@ -123,12 +123,11 @@ begin
     
     process (result_r, output_reg_load) begin
       if(output_reg_load = '1') then
-        
+        result_nxt <= me_output;
       else
         result_nxt <= x"00000000" & result_r(127 downto 32);
       end if;
     end process;
-    
     DataOut <= result_r(31 downto 0);
 -- ***************************************************************************
     me : entity work.MonExp
@@ -161,6 +160,8 @@ begin
          begin
              case (current_state) is
                  when INIT       =>
+                    output_reg_en <= '0';
+                    output_reg_load <= '0';
                     CoreFinished <= '1';
                     count <= '0';
                     me_start <= '0';
@@ -173,6 +174,7 @@ begin
                         next_state <= INIT;
                     end if;
                  when LOADCONF   =>
+                    
                     config_reg_en <= '1';
                     CoreFinished <= '0';
                     count <= '1';
@@ -220,15 +222,21 @@ begin
                     me_start <= '0';
                     if me_done = '1' then
                         next_state <= UNLOADANS;
+                        output_reg_en <= '1';
+                        output_reg_load <= '1';
                     else
                         next_state <= CALC;
                     end if;
                  when UNLOADANS  =>
                     CoreFinished <= '1';
+                    output_reg_en <= '1';
+                    output_reg_load <= '0';
                     count <= '1';
                     me_start <= '0';
                     if loop_counter = msg_parts - 1 then
                         next_state <= WAITFORMSG;
+                        output_reg_en <= '0';
+                        count <= '0';
                     else
                         next_state <= UNLOADANS;
                     end if;
