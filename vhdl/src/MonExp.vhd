@@ -37,6 +37,9 @@ architecture circuit of MonExp is
     signal mp_u           : std_logic_vector(k -1 downto 0);
     signal x_mon          : std_logic_vector(k -1 downto 0);
     signal M_mon          : std_logic_vector(k -1 downto 0);
+    -- Counter signals
+    signal reset_counter  : std_logic;
+    signal increment_counter  : std_logic;
 begin
     mp : entity work.MonPro
     port map (
@@ -49,22 +52,41 @@ begin
         done        => mp_done,         
         u           => mp_u            
              );
+    counterProc : process (clk) is
+         begin
+             if resetn = '0' or reset_counter = '1' then
+                loop_counter <= 0;
+             end if;
+             if rising_edge(clk) then
+                if increment_counter = '1' then
+                    loop_counter <= loop_counter + 1;
+                end if;
+             end if;
+         end process counterProc;
     fsm_SynchProc : process (resetn, clk)
     begin
         if (resetn = '0') then
             current_state <= IDLE;
             --next_state <= IDLE;
-            output <= (others => '0');
+            --output <= (others => '0');
         elsif rising_edge(clk) then
             current_state <= next_state;
         end if;
     end process fsm_SynchProc;
     
-    fsm_CombProc : process (current_state, start, mp_done)
+    fsm_CombProc : process (current_state, start, mp_done, M, n, e, r, r_2, loop_counter, M_mon, x_mon, mp_u)
     variable loop_double_monpro : std_logic;
     begin
         case (current_state) is
         when IDLE       =>
+            loop_counter <= 0;
+            output <= (others => '0');
+            x_mon <= (others => '0');
+            M_mon <= (others => '0');
+            mp_a <= (others => '0');
+            mp_b <= (others => '0');
+            mp_n <= (others => '0');
+            mp_start <= '0';
             done <= '0';
             if start = '1' then
                 x_mon <= r;
@@ -78,8 +100,14 @@ begin
             end if;
         when PREPARE      =>
             loop_counter <= 0;
-            done <= '0';
+            output <= (others => '0');
+            x_mon <= (others => '0'); --TODO, change to the ones above
+            M_mon <= (others => '0'); --TODO, make M_mon and x_mon registers
+            mp_a <= (others => '0');
+            mp_b <= (others => '0');
+            mp_n <= (others => '0');
             mp_start <= '0';
+            done <= '0';
             if mp_done = '1' then
                 M_mon <= mp_u; -- Maybe this should be moved
                 mp_a <= x_mon;
@@ -91,8 +119,14 @@ begin
                 next_state <= PREPARE;
             end if;
         when MONPROLOOP =>
-            -- TODO: Actually make calculation here
-            mp_start <= '0';
+            done <= '0';
+            output <= (others => '0');
+            x_mon <= (others => '0');
+            M_mon <= (others => '0');
+            mp_a <= (others => '0');
+            mp_b <= (others => '0');
+            mp_n <= (others => '0');
+            mp_start <= '0';  -- TODO: Remove the ones with no effect from this
             if mp_done = '1' then
                 x_mon <= mp_u;
                 if (e(loop_counter) = '1') and (loop_double_monpro = '0')  then 
@@ -100,7 +134,7 @@ begin
                     mp_b <= x_mon;
                     mp_n <= n;
                     mp_start <= '1';
-                    loop_double_monpro := '1';
+                    loop_double_monpro := '1';  -- TODO: DELETE THIS WAITING, just for testing
                 else
                     mp_a <= x_mon;
                     mp_b <= x_mon;
@@ -116,8 +150,6 @@ begin
             else
                 mp_start <= '0'; -- Unnedeed
             end if;
-            
-            done <= '0';
             if loop_counter = k-1 then 
                 mp_a <= x_mon;
                 mp_b <= (others => '0');
@@ -129,8 +161,15 @@ begin
                 next_state <= MONPROLOOP;
             end if;
         when POSTX      =>
-            done <= '0';
+            loop_counter <= 0;
+            output <= (others => '0'); -- TODO: Change these to the ones above
+            x_mon <= (others => '0');
+            M_mon <= (others => '0');
+            mp_a <= (others => '0');
+            mp_b <= (others => '0');
+            mp_n <= (others => '0');
             mp_start <= '0';
+            done <= '0';
             if mp_done = '1' then
                 done <= '1';
                 output <= mp_u;
@@ -139,8 +178,26 @@ begin
                 next_state <= POSTX;
         end if;
         when FINISHED   =>
+            loop_counter <= 0;
+            output <= (others => '0');
+            x_mon <= (others => '0');
+            M_mon <= (others => '0');
+            mp_a <= (others => '0');
+            mp_b <= (others => '0');
+            mp_n <= (others => '0');
+            mp_start <= '0';
+            done <= '1';
             next_state <= IDLE;
         when others     => --Should NOT happen
+            loop_counter <= 0;
+            output <= (others => '0');
+            x_mon <= (others => '0');
+            M_mon <= (others => '0');
+            mp_a <= (others => '0');
+            mp_b <= (others => '0');
+            mp_n <= (others => '0');
+            mp_start <= '0';
+            done <= '0';
             next_state <= IDLE;
         end case;
     end process fsm_CombProc;
