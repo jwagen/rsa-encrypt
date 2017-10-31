@@ -34,12 +34,12 @@ architecture circuit of RSACore is
     constant params : integer := 16; --TODO 4*k/W_DATA;  -- 4 params of 128bit, 4*128/32=16
     constant msg_parts : integer := k/W_DATA;
     -- MonExp signals
-    signal me_start       : std_logic;
     --signal me_M           : std_logic_vector(k -1 downto 0);
     --signal me_e           : std_logic_vector(k -1 downto 0);
     --signal me_n           : std_logic_vector(k -1 downto 0);
     --signal me_r           : std_logic_vector(k -1 downto 0);
     --signal me_r_2         : std_logic_vector(k -1 downto 0);
+    signal me_start       : std_logic;
     signal me_done        : std_logic;
     signal me_output      : std_logic_vector(k -1 downto 0);
     -- Control data
@@ -58,13 +58,9 @@ architecture circuit of RSACore is
     signal M_reg_en   : std_logic;
     signal M_r, M_nxt     : std_logic_vector(k-1 downto 0);
     -- Output registers
-    --signal M_reg_en   : std_logic;
     signal result_r, result_nxt: std_logic_vector(127 downto 0);
     Signal output_reg_en   : std_logic;
     Signal output_reg_load : std_logic;
-
-    --signal M_r, M_nxt     : std_logic_vector(k-1 downto 0);
-    
 begin
 
   -- Register e_r, n_r, r_r and r_2_r

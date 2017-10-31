@@ -52,7 +52,7 @@ begin
         done        => mp_done,         
         u           => mp_u            
              );
-    counterProc : process (clk) is
+    counterProc : process (clk, resetn, increment_counter, reset_counter) is
          begin
              if resetn = '0' or reset_counter = '1' then
                 loop_counter <= 0;
@@ -79,6 +79,8 @@ begin
     begin
         case (current_state) is
         when IDLE       =>
+            loop_double_monpro := '0';
+            reset_counter <= '1';
             increment_counter <= '0';
             output <= (others => '0');
             x_mon <= (others => '0');
@@ -99,6 +101,8 @@ begin
                 next_state <= IDLE;
             end if;
         when PREPARE      =>
+            loop_double_monpro := '0';
+            reset_counter <= '0';
             increment_counter <= '0';
             output <= (others => '0');
             x_mon <= (others => '0'); --TODO, change to the ones above
@@ -119,6 +123,8 @@ begin
                 next_state <= PREPARE;
             end if;
         when MONPROLOOP =>
+            loop_double_monpro := '0';
+            reset_counter <= '0';
             done <= '0';
             output <= (others => '0');
             x_mon <= (others => '0');
@@ -145,10 +151,11 @@ begin
                 if loop_double_monpro = '1' then
                     increment_counter <= '0';
                 else
-                    increment_counter <= '1';
+                    increment_counter <= '1'; 
                 end if;
             else
                 mp_start <= '0'; -- Unnedeed
+                increment_counter <= '1'; -- TODO: For testing, set this to 1, when monpro fixed, set to 0
             end if;
             if loop_counter = k-1 then 
                 mp_a <= x_mon;
@@ -157,10 +164,14 @@ begin
                 mp_n <= n;
                 mp_start <= '1';
                 next_state <= POSTX;
+                increment_counter <= '0';
             else
                 next_state <= MONPROLOOP;
+                
             end if;
         when POSTX      =>
+            loop_double_monpro := '0';
+            reset_counter <= '0';
             increment_counter <= '0';
             output <= (others => '0'); -- TODO: Change these to the ones above
             x_mon <= (others => '0');
@@ -178,6 +189,8 @@ begin
                 next_state <= POSTX;
         end if;
         when FINISHED   =>
+            loop_double_monpro := '0';
+            reset_counter <= '0';
             increment_counter <= '0';
             output <= (others => '0');
             x_mon <= (others => '0');
@@ -189,6 +202,8 @@ begin
             done <= '1';
             next_state <= IDLE;
         when others     => --Should NOT happen
+            loop_double_monpro := '0';
+            reset_counter <= '0';
             increment_counter <= '0';
             output <= (others => '0');
             x_mon <= (others => '0');
