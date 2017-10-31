@@ -79,7 +79,7 @@ begin
     begin
         case (current_state) is
         when IDLE       =>
-            loop_counter <= 0;
+            increment_counter <= '0';
             output <= (others => '0');
             x_mon <= (others => '0');
             M_mon <= (others => '0');
@@ -99,7 +99,7 @@ begin
                 next_state <= IDLE;
             end if;
         when PREPARE      =>
-            loop_counter <= 0;
+            increment_counter <= '0';
             output <= (others => '0');
             x_mon <= (others => '0'); --TODO, change to the ones above
             M_mon <= (others => '0'); --TODO, make M_mon and x_mon registers
@@ -143,9 +143,9 @@ begin
                     loop_double_monpro := '0';
                 end if;
                 if loop_double_monpro = '1' then
-                    loop_counter <= loop_counter;
+                    increment_counter <= '0';
                 else
-                    loop_counter <= loop_counter + 1;
+                    increment_counter <= '1';
                 end if;
             else
                 mp_start <= '0'; -- Unnedeed
@@ -161,7 +161,7 @@ begin
                 next_state <= MONPROLOOP;
             end if;
         when POSTX      =>
-            loop_counter <= 0;
+            increment_counter <= '0';
             output <= (others => '0'); -- TODO: Change these to the ones above
             x_mon <= (others => '0');
             M_mon <= (others => '0');
@@ -178,7 +178,7 @@ begin
                 next_state <= POSTX;
         end if;
         when FINISHED   =>
-            loop_counter <= 0;
+            increment_counter <= '0';
             output <= (others => '0');
             x_mon <= (others => '0');
             M_mon <= (others => '0');
@@ -189,7 +189,7 @@ begin
             done <= '1';
             next_state <= IDLE;
         when others     => --Should NOT happen
-            loop_counter <= 0;
+            increment_counter <= '0';
             output <= (others => '0');
             x_mon <= (others => '0');
             M_mon <= (others => '0');
