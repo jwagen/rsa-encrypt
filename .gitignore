@@ -7,6 +7,8 @@
 # vivado project dir
 vhdl/.Xil/
 vhdl/rsa_core/
+vhdl/.build
 *.jou
 *.log
 *.str
+vhdl/.xvhdl.init

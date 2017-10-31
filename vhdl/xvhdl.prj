@@ -1,0 +1,15 @@
+builder = xvhdl
+single_build_flags = -2008asoetuh
+target_dir = .build
+vhdl work 
+vhdl work src/MonPro.vhd
+vhdl work src/MonExp.vhd
+vhdl work src/RSACore.vhd
+vhdl work testbench/MonPro_tb.vhd
+vhdl work testbench/MonExp_tb.vhd
+vhdl work testbench/MonPro_tb.vhd
+vhdl work testbench/CompDecl.vhd  
+vhdl work testbench/MonExp_tb.vhd 
+vhdl work testbench/MonPro_tb.vhd 
+vhdl work testbench/RSACoreTestBench.vhd 
+vhdl work testbench/RSAParameters.vhd 

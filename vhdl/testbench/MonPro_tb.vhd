@@ -154,15 +154,6 @@ begin
 			read(l, s32);
 			result_file := str_to_stdvec(s32);
 
-			--report "Integer natural" & integer'image(integer'high);
-			--report "a_file = " & integer'image(a_file);
-			--report "b_file = " & integer'image(b_file);
-			--report "n_file = " & integer'image(n_file);
-
-			--a <= std_logic_vector(to_unsigned(a_file, a'length));
-			--b <= std_logic_vector(to_unsigned(a_file, b'length));
-			--n <= std_logic_vector(to_unsigned(a_file, n'length));
-
 
 			wait_until_n_falling_edges(clk, 2);
 

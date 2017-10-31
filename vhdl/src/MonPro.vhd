@@ -5,6 +5,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 --use ieee.numeric_std_unsigned.all;
 
+
 -- Math operators
 use IEEE.math_real."ceil";
 use IEEE.math_real."log2";
@@ -29,7 +30,6 @@ architecture circuit of MonPro is
     type state_type is (IDLE, LOOPING, SUBTRACTING, FINISHED);
     signal current_state, next_state: state_type;
     
-
     signal u_next : std_logic_vector(k -1 downto 0);
     signal u_reg : std_logic_vector(k -1 downto 0);
     signal u_reg_next : std_logic_vector(k -1 downto 0);
@@ -116,7 +116,11 @@ begin
         end if;
 
 
-        u_reg_next <= '0' & u_temp2(k -1 downto 1);
+		if current_state = LOOPING then
+			u_reg_next <= '0' & u_temp2(k -1 downto 1);
+		else
+			u_reg_next <= (others => '0');
+		end if;
 
         if current_state = SUBTRACTING then
             if u_reg >= n then
