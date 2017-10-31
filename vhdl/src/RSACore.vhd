@@ -35,11 +35,11 @@ architecture circuit of RSACore is
     constant msg_parts : integer := k/W_DATA;
     -- MonExp signals
     signal me_start       : std_logic;
-    signal me_M           : std_logic_vector(k -1 downto 0);
-    signal me_e           : std_logic_vector(k -1 downto 0);
-    signal me_n           : std_logic_vector(k -1 downto 0);
-    signal me_r           : std_logic_vector(k -1 downto 0);
-    signal me_r_2         : std_logic_vector(k -1 downto 0);
+    --signal me_M           : std_logic_vector(k -1 downto 0);
+    --signal me_e           : std_logic_vector(k -1 downto 0);
+    --signal me_n           : std_logic_vector(k -1 downto 0);
+    --signal me_r           : std_logic_vector(k -1 downto 0);
+    --signal me_r_2         : std_logic_vector(k -1 downto 0);
     signal me_done        : std_logic;
     signal me_output      : std_logic_vector(k -1 downto 0);
     -- Control data
@@ -75,7 +75,7 @@ begin
       n_r <= (others => '0'); 
       r_r <= (others => '0');
       r_2_r <= (others => '0');     
-    elsif(clk'event and clk='1') then
+    elsif rising_edge(clk) then
       if(config_reg_en ='1') then
         e_r <= e_nxt;
         n_r <= n_nxt;
@@ -97,7 +97,7 @@ begin
   process (clk, resetn) begin
     if(resetn = '0') then
       M_r <= (others => '0');    
-    elsif(clk'event and clk='1') then
+    elsif rising_edge(clk) then
       if(M_reg_en ='1') then
         M_r <= M_nxt;     
       end if;
@@ -114,14 +114,14 @@ begin
     process (clk, resetn) begin
       if(resetn = '0') then
         result_r <= (others => '0');     
-      elsif(clk'event and clk='1') then
+      elsif rising_edge(clk) then
         if(output_reg_en ='1') then
           result_r <= result_nxt;       
         end if;
       end if;
     end process;
     
-    process (result_r, output_reg_load) begin
+    process (result_r, me_output, output_reg_load) begin
       if(output_reg_load = '1') then
         result_nxt <= me_output;
       else
@@ -135,14 +135,15 @@ begin
         clk         => clk,          
         resetn      => resetn,       
         start       => me_start,        
-        M           => me_M,     
-        e           => me_e,     
-        n           => me_n,     
-        r           => me_r,     
-        r_2         => me_r_2,   
+        M           => M_r,     
+        e           => e_r,     
+        n           => n_r,     
+        r           => r_r,     
+        r_2         => r_2_r,   
         done        => me_done,  
         output      => me_output   
              );
+         
      fsm_SynchProc : process (resetn, clk)
          begin
              if (resetn = '0') then
@@ -162,6 +163,7 @@ begin
                  when INIT       =>
                     output_reg_en <= '0';
                     output_reg_load <= '0';
+                    config_reg_en <= '0';
                     CoreFinished <= '1';
                     count <= '0';
                     me_start <= '0';
@@ -174,8 +176,10 @@ begin
                         next_state <= INIT;
                     end if;
                  when LOADCONF   =>
-                    
+                    output_reg_en <= '0';
+                    output_reg_load <= '0';
                     config_reg_en <= '1';
+                    M_reg_en <= '0';
                     CoreFinished <= '0';
                     count <= '1';
                     me_start <= '0';
@@ -186,6 +190,8 @@ begin
                         next_state <= LOADCONF;
                     end if;
                  when WAITFORMSG =>
+                    output_reg_en <= '0';
+                    output_reg_load <= '0';
                     config_reg_en <= '0';
                     CoreFinished <= '1';
                     count <= '0';
@@ -201,6 +207,10 @@ begin
                          next_state <= WAITFORMSG;
                      end if;
                  when LOADINGMSG =>
+                    output_reg_en <= '0';
+                    output_reg_load <= '0';
+                    config_reg_en <= '0';
+                    M_reg_en <= '0';
                     CoreFinished <= '0';
                     count <= '1';
                     me_start <= '0';
@@ -212,11 +222,19 @@ begin
                         next_state <= LOADINGMSG;
                     end if;
                  when STARTCALC       =>
-                       CoreFinished <= '0';
-                       count <= '0';
-                       me_start <= '1';
-                       next_state <= CALC;
+                    output_reg_en <= '0';
+                    output_reg_load <= '0';
+                    M_reg_en <= '0';
+                    config_reg_en <= '0';
+                    CoreFinished <= '0';
+                    count <= '0';
+                    me_start <= '1';
+                    next_state <= CALC;
                  when CALC       =>
+                    output_reg_en <= '0';
+                    output_reg_load <= '0';
+                    config_reg_en <= '0';
+                    M_reg_en <= '0';
                     CoreFinished <= '0';
                     count <= '0';
                     me_start <= '0';
@@ -230,6 +248,8 @@ begin
                  when UNLOADANS  =>
                     CoreFinished <= '1';
                     output_reg_en <= '1';
+                    M_reg_en <= '0';
+                    config_reg_en <= '0';
                     output_reg_load <= '0';
                     count <= '1';
                     me_start <= '0';
@@ -242,6 +262,14 @@ begin
                     end if;
                  when others     => --Should NOT happen
                     next_state <= INIT;
+                    output_reg_en <= '0';
+                    output_reg_load <= '0';
+                    M_reg_en <= '0';
+                    config_reg_en <= '0';
+                    count <= '0';
+                    me_start <= '0';
+                    CoreFinished <= '1';
              end case;
     end process fsm_CombProc;
+    
 end architecture;
