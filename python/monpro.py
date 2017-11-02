@@ -16,7 +16,6 @@ def monpro(a, b, n, k = 128, debug=False):
     if k == None:    
         k = len(bin(max(a,b)))
     u = 0
-    print(debug)
 
     for i in range(0, k):
         if getBit(a, i):
@@ -26,7 +25,7 @@ def monpro(a, b, n, k = 128, debug=False):
             u = u + n
         u = u >> 1
         if(debug):
-            print(hex(u))
+            print("{0:0{1}d} {2:0{3}X}".format(i, 3, u, 33))
 
     if u >= n: # Subtracts if u is equal or larger to n, as u mod n should be between 0 and n-1 
         u = u - n
@@ -186,7 +185,7 @@ def cli(m, public_key, private_key, n, k, a, b, encrypt, decrypt, monpro, x, r, 
                 print("{1:0{0}X} {2:0{0}X} {3:0{0}X} {4:0{0}X}".format(32, a, b, n, awnser))
             else:
                 print(awnser)
-            print(globals()['monpro'](a, b, n, debug=debug))
+            #print(globals()['monpro'](a, b, n, debug=debug))
 
         if r:
             print("{1:0{0}X} {2:0{0}X}".format(32, 2**k % n, 2**(k*2) % n))

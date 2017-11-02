@@ -31,8 +31,8 @@ architecture circuit of MonPro is
     signal current_state, next_state: state_type;
     
     signal u_next : std_logic_vector(k -1 downto 0);
-    signal u_reg : std_logic_vector(k -1 downto 0);
-    signal u_reg_next : std_logic_vector(k -1 downto 0);
+    signal u_reg : std_logic_vector(k+1 downto 0);
+    signal u_reg_next : std_logic_vector(k+1 downto 0);
     constant bits_in_k : integer := integer(ceil(log2(real(k))));
     signal loop_counter : natural range 0 to k-1 := 0;
     signal loop_counter_next : natural range 0 to k-1 := 0;
@@ -99,34 +99,36 @@ begin
 
 -- Set done output
     process(all)
-        variable u_temp1 : std_logic_vector(k -1 downto 0);
-        variable u_temp2 : std_logic_vector(k -1 downto 0);
-        variable u_temp3 : std_logic_vector(k -1 downto 0);
+        variable u_temp1 : std_logic_vector(k+1  downto 0);
+        variable u_temp2 : std_logic_vector(k+1  downto 0);
+        variable u_temp3 : std_logic_vector(k+1  downto 0);
     begin
         if a(loop_counter) = '1' then
-            u_temp1 := std_logic_vector(unsigned(u_reg) + unsigned(b));
+            u_temp1 := std_logic_vector(unsigned(u_reg) + unsigned("00" & b));
         else
             u_temp1 := u_reg;
         end if;
 
         if u_temp1(0) = '1' then
-            u_temp2 := std_logic_vector(unsigned(u_temp1) + unsigned(n));
+            u_temp2 := std_logic_vector(unsigned(u_temp1) + unsigned("00" & n));
         else
             u_temp2 := u_temp1;
         end if;
 
 
+
 		if current_state = LOOPING then
-			u_reg_next <= '0' & u_temp2(k -1 downto 1);
+			u_reg_next <= '0' & u_temp2(k+1 downto 1);
+
 		else
 			u_reg_next <= (others => '0');
 		end if;
 
         if current_state = SUBTRACTING then
             if u_reg >= n then
-                u_next <= std_logic_vector(unsigned(u_reg) - unsigned(n));
+                u_next <= std_logic_vector(unsigned(u_reg(k-1 downto 0)) - unsigned(n));
             else
-                u_next <= u_reg;
+                u_next <= u_reg(k-1 downto 0);
             end if;
 
         else
