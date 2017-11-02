@@ -54,12 +54,17 @@ begin
              );
     counterProc : process (clk, resetn, increment_counter, reset_counter) is
          begin
-             if resetn = '0' or reset_counter = '1' then
-                loop_counter <= 0;
-             end if;
              if rising_edge(clk) then
-                if increment_counter = '1' then
-                    loop_counter <= loop_counter + 1;
+                if resetn = '0' then
+                    loop_counter <= 0;
+                else
+                    if reset_counter = '1' then
+                        loop_counter <= 0;
+                    else
+                        if increment_counter = '1' then
+                            loop_counter <= loop_counter + 1;
+                        end if;
+                    end if;
                 end if;
              end if;
          end process counterProc;
