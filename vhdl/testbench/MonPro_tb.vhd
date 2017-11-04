@@ -127,16 +127,12 @@ begin
 		variable s32: string(k/4 downto 1);          
 		variable char_dump : character;
 	begin
-		--	write(l, string'("hello"));
-		--	writeline(testdata_file, l);
+        -- reset the system
+        resetn <= '0';
 
-		--	file_close(testdata_file);
+        wait_until_n_falling_edges(clk, 2);
+        resetn <= '1';
 		while not ENDFILE(testdata_file) loop
-			-- reset the system
-			resetn <= '0';
-
-			wait_until_n_falling_edges(clk, 2);
-			resetn <= '1';
 
 
 			--Set data on input
@@ -155,10 +151,10 @@ begin
 			result_file := str_to_stdvec(s32);
 
 
-			wait_until_n_falling_edges(clk, 2);
+			--wait_until_n_rising_edges(clk, 1);
 
 			start <= '1';
-			wait_until_n_falling_edges(clk, 1);
+			wait_until_n_rising_edges(clk, 1);
 			start <= '0';
 
 			wait until done = '1';

@@ -62,12 +62,13 @@ begin
         case (current_state) is
             when IDLE =>
                 done <= '0';
-                loop_counter_next <= 0;
 
                 if start = '1' then
                     next_state <= LOOPING;
+                    loop_counter_next <= 1;
                 else
                     next_state <= IDLE;
+                    loop_counter_next <= 0;
                 end if;
 
             when LOOPING =>
@@ -83,15 +84,20 @@ begin
             when SUBTRACTING =>
                 loop_counter_next <= 0;
                 done <= '0';
-                loop_counter_next <= 0;
 
                 next_state <= FINISHED;
 
             when FINISHED =>
                 done <= '1';
-                loop_counter_next <= 0;
-
-                next_state <= IDLE;
+                
+                -- Jump to looping if the start signal already is pressent
+                if start = '1' then
+                    next_state <= LOOPING;
+                    loop_counter_next <= 0;
+                else
+                    next_state <= IDLE;
+                    loop_counter_next <= 0;
+                end if;
 
             when others =>
                 next_state <= IDLE;
@@ -135,7 +141,7 @@ begin
 --
 --            end case;
 
-        if (current_state = looping or current_state = idle) then
+        if (current_state = LOOPING or current_state = IDLE) then
             if a(loop_counter) = '1' then
                 u_temp1 := std_logic_vector(unsigned(u_reg) + unsigned("00" & b));
             else
@@ -155,7 +161,7 @@ begin
 
 
 
-		if current_state = LOOPING then
+		if current_state = LOOPING or start = '1' then
 			u_reg_next <= '0' & u_temp2(k+1 downto 1);
 
 		else
