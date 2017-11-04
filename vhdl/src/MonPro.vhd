@@ -35,6 +35,8 @@ architecture circuit of MonPro is
 	-- Use k+1 bits for the intermediate registers
 	-- The upper bound of the intermediate result before downshift is:
 	-- (N-1)*3 = 3N - 3. This requires two extra bits to contain
+	-- u_intermediate could be only k bits long, as long it only holds the
+	-- result of the shift opperation. It is kept at k+1 bits for ease of use.
     signal u_intermediate : std_logic_vector(k+1 downto 0);
     signal u_intermediate_next : std_logic_vector(k+1 downto 0);
 
