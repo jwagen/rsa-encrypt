@@ -1,5 +1,5 @@
 builder = xvhdl
-single_build_flags = -2008asoetuh
+single_build_flags = -2008
 target_dir = .build
 vhdl work 
 vhdl work src/MonPro.vhd

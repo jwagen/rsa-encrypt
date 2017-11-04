@@ -31,9 +31,13 @@ architecture circuit of MonPro is
     signal current_state, next_state: state_type;
     
     signal u_next : std_logic_vector(k -1 downto 0);
-    signal u_reg : std_logic_vector(k+1 downto 0);
-    signal u_reg_next : std_logic_vector(k+1 downto 0);
-    constant bits_in_k : integer := integer(ceil(log2(real(k))));
+
+	-- Use k+1 bits for the intermediate registers
+	-- The upper bound of the intermediate result before downshift is:
+	-- (N-1)*3 = 3N - 3. This requires two extra bits to contain
+    signal u_intermediate : std_logic_vector(k+1 downto 0);
+    signal u_intermediate_next : std_logic_vector(k+1 downto 0);
+
     signal loop_counter : natural range 0 to k-1 := 0;
     signal loop_counter_next : natural range 0 to k-1 := 0;
 begin
@@ -45,144 +49,106 @@ begin
                 loop_counter <= 0;
 
                 u <= (others => '0');
-                u_reg <= (others => '0');
+                u_intermediate <= (others => '0');
             else
                 current_state <= next_state;
                 loop_counter <= loop_counter_next;
 
                 u <= u_next;
-                u_reg <= u_reg_next;
+                u_intermediate <= u_intermediate_next;
 
             end if;
         end if;
     end process;
 
     comb_proc: process (all)
+        variable u_temp1 : std_logic_vector(k+1  downto 0);
+        variable u_temp2 : std_logic_vector(k+1  downto 0);
+        variable u_next_temp : std_logic_vector(k+1 downto 0);
     begin
+		-- Intermediate calculation
+		-- Stage 2a
+        if a(loop_counter) = '1' then
+            u_temp1 := std_logic_vector(unsigned(u_intermediate) + unsigned("00" & b));
+        else
+            u_temp1 := u_intermediate;
+        end if;
+
+		-- Stage 2a
+        if u_temp1(0) = '1' then
+            u_temp2 := std_logic_vector(unsigned(u_temp1) + unsigned("00" & n));
+        else
+            u_temp2 := u_temp1;
+        end if;
+
+
+        -- State machine
         case (current_state) is
             when IDLE =>
                 done <= '0';
+                u_next <= (others => '0');
 
+
+				-- Do start first loop imediatly on start signal
                 if start = '1' then
                     next_state <= LOOPING;
                     loop_counter_next <= 1;
+					u_intermediate_next <= '0' & u_temp2(k+1 downto 1);
                 else
                     next_state <= IDLE;
                     loop_counter_next <= 0;
+					u_intermediate_next <= (others => '0');
                 end if;
 
             when LOOPING =>
                 done <= '0';
-                loop_counter_next <= loop_counter + 1;
+                u_next <= (others => '0');
+
+				--Shift intermediate
+				u_intermediate_next <= '0' & u_temp2(k+1 downto 1);
                 
                 if loop_counter = k-1 then
                     next_state <= SUBTRACTING;
+                    loop_counter_next <= 0;
                 else
                     next_state <= LOOPING;
+                    loop_counter_next <= loop_counter + 1;
                 end if;
 
             when SUBTRACTING =>
                 loop_counter_next <= 0;
                 done <= '0';
+				u_intermediate_next <= (others => '0');
+
+				-- Subtraction has to be don with the k+1 bits to be correct
+                if u_intermediate >= ("00" & n) then
+                    u_next_temp := std_logic_vector(unsigned(u_intermediate) - unsigned("00" & n));
+                    u_next <= u_next_temp(k-1 downto 0);
+                else
+                    u_next <= u_intermediate(k-1 downto 0);
+                end if;
 
                 next_state <= FINISHED;
 
             when FINISHED =>
                 done <= '1';
+                u_next <= (others => '0');
                 
                 -- Jump to looping if the start signal already is pressent
+				-- Do start first loop imediatly on start signal
                 if start = '1' then
                     next_state <= LOOPING;
-                    loop_counter_next <= 0;
+                    loop_counter_next <= 1;
+					u_intermediate_next <= '0' & u_temp2(k+1 downto 1);
                 else
                     next_state <= IDLE;
                     loop_counter_next <= 0;
+					u_intermediate_next <= (others => '0');
                 end if;
 
             when others =>
                 next_state <= IDLE;
         end case;
-    end process;
-
--- Set done output
-    process(all)
-        variable u_temp1 : std_logic_vector(k+1  downto 0);
-        variable u_temp2 : std_logic_vector(k+1  downto 0);
-        variable u_next_temp : std_logic_vector(k+1 downto 0);
-    begin
-
---        case (current_state) is
---            when LOOPING | IDLE =>
---                if a(loop_counter) = '1' then
---                    u_temp1 := std_logic_vector(unsigned(u_reg) + unsigned("00" & b));
---                else
---                    u_temp1 := u_reg;
---                end if;
---
---                if u_temp1(0) = '1' then
---                    u_temp2 := std_logic_vector(unsigned(u_temp1) + unsigned("00" & n));
---                else
---                    u_temp2 := u_temp1;
---                end if;
---
---                u_reg_next <= '0' & u_temp2(k+1 downto 1);
---                u_next <= (others => '0');
---
---
---            when SUBTRACTING =>
---                if u_reg >= n then
---                    u_next <= std_logic_vector(unsigned(u_reg(k-1 downto 0)) - unsigned(n));
---                else
---                    u_next <= u_reg(k-1 downto 0);
---                end if;
---
---            when others =>
---                u_next <= (others => '0');
---
---            end case;
-
-        if (current_state = LOOPING or current_state = IDLE) then
-            if a(loop_counter) = '1' then
-                u_temp1 := std_logic_vector(unsigned(u_reg) + unsigned("00" & b));
-            else
-                u_temp1 := u_reg;
-            end if;
-
-            if u_temp1(0) = '1' then
-                u_temp2 := std_logic_vector(unsigned(u_temp1) + unsigned("00" & n));
-            else
-                u_temp2 := u_temp1;
-            end if;
-        else
-            u_temp1 := (others => '0');
-            u_temp2 := (others => '0');
-        end if;
-
-
-
-
-		if current_state = LOOPING or start = '1' then
-			u_reg_next <= '0' & u_temp2(k+1 downto 1);
-
-		else
-			u_reg_next <= (others => '0');
-		end if;
-
-        if current_state = SUBTRACTING then
-            if u_reg >= ("00" & n) then
-                u_next_temp := std_logic_vector(unsigned(u_reg) - unsigned("00" & n));
-                u_next <= u_next_temp(k-1 downto 0);
-            else
-                u_next <= u_reg(k-1 downto 0);
-            end if;
-
-        else
-            u_next <= (others => '0');
-        end if;
-
-
-
-
     end process;
 
 end architecture;

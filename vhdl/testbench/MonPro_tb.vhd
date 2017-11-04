@@ -34,7 +34,6 @@ architecture bahavioral of MonPro_tb is
 
 	--Clock parameters
 	constant CLK_PERIOD : time := 10ns;
-	constant RESET_TIME : time := 10ns;
 
 	constant k : integer := 128;
 
@@ -49,9 +48,7 @@ architecture bahavioral of MonPro_tb is
 
 	--File for test data
 	constant testdata_filename : string := "../../../../../testbench/monpro_testdata.txt";
-	file testdata_file : TEXT is in testdata_filename;
-	--file testdata_file : TEXT open read_mode is testdata_filename;
-	type INT_64 is range -2**63 to 2**63-1;
+	file testdata_file : TEXT;
 
 
 	-- Function for converting string of hex to std_logic_vector
@@ -126,47 +123,65 @@ begin
 		variable l : LINE;
 		variable s32: string(k/4 downto 1);          
 		variable char_dump : character;
+        variable error_counter : integer := 0;
+        variable test_counter : integer := 0;
 	begin
-        -- reset the system
-        resetn <= '0';
+		-- Test with different clk periods between start and done
+        for i in 0 to 2 loop
+             --report "Running tests with " & integer'image(i) & " clocks delay"  severity error;
+            file_open(testdata_file, testdata_filename,  read_mode);
+            -- reset the system
+            resetn <= '0';
 
-        wait_until_n_falling_edges(clk, 2);
-        resetn <= '1';
-		while not ENDFILE(testdata_file) loop
-
-
-			--Set data on input
-			readline(testdata_file, l);
-			read(l, s32);
-			a <= str_to_stdvec(s32);
-			--Read space
-			read(l, char_dump);
-			read(l, s32);
-			b <= str_to_stdvec(s32);
-			read(l, char_dump);
-			read(l, s32);
-			n <= str_to_stdvec(s32);
-			read(l, char_dump);
-			read(l, s32);
-			result_file := str_to_stdvec(s32);
+            wait_until_n_falling_edges(clk, 2);
+            resetn <= '1';
+            while not ENDFILE(testdata_file) loop
 
 
-			--wait_until_n_rising_edges(clk, 1);
+                --Set data on input
+                readline(testdata_file, l);
+                read(l, s32);
+                a <= str_to_stdvec(s32);
+                --Read space
+                read(l, char_dump);
+                read(l, s32);
+                b <= str_to_stdvec(s32);
+                read(l, char_dump);
+                read(l, s32);
+                n <= str_to_stdvec(s32);
+                read(l, char_dump);
+                read(l, s32);
+                result_file := str_to_stdvec(s32);
 
-			start <= '1';
-			wait_until_n_rising_edges(clk, 1);
-			start <= '0';
 
-			wait until done = '1';
+                wait_until_n_rising_edges(clk, i);
 
-			-- Check output
-			assert u = result_file report "Result not correct, expected "  severity error;
+                start <= '1';
+                wait_until_n_rising_edges(clk, 1);
+                start <= '0';
+
+                wait until done = '1';
+
+                -- Check output
+                if (u /= result_file) then
+                    error_counter := error_counter + 1;
+                    report "Result not correct, with " & integer'image(i) & " clocks delay"  severity error;
+                end if;
+
+				test_counter := test_counter + 1;
 
 
-		end loop;
+            end loop;
+			-- Closes the file so it can be read again
+            file_close(testdata_file);
+        end loop;
 
 		--End simulation 
-		assert false report "Test complete" severity failure;
+        if (error_counter = 0) then
+		    assert false report "Test successful all results correct" severity failure;
+        else
+		    assert false report "Test failed with " & integer'image(error_counter) & " wrong results" severity failure;
+        end if;
 	end process;
 
 
