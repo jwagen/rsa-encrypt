@@ -74,13 +74,14 @@ begin
                 done <= '0';
                 loop_counter_next <= loop_counter + 1;
                 
-                if loop_counter = k-2 then
+                if loop_counter = k-1 then
                     next_state <= SUBTRACTING;
                 else
                     next_state <= LOOPING;
                 end if;
 
             when SUBTRACTING =>
+                loop_counter_next <= 0;
                 done <= '0';
                 loop_counter_next <= 0;
 
@@ -101,19 +102,56 @@ begin
     process(all)
         variable u_temp1 : std_logic_vector(k+1  downto 0);
         variable u_temp2 : std_logic_vector(k+1  downto 0);
-        variable u_temp3 : std_logic_vector(k+1  downto 0);
+        variable u_next_temp : std_logic_vector(k+1 downto 0);
     begin
-        if a(loop_counter) = '1' then
-            u_temp1 := std_logic_vector(unsigned(u_reg) + unsigned("00" & b));
+
+--        case (current_state) is
+--            when LOOPING | IDLE =>
+--                if a(loop_counter) = '1' then
+--                    u_temp1 := std_logic_vector(unsigned(u_reg) + unsigned("00" & b));
+--                else
+--                    u_temp1 := u_reg;
+--                end if;
+--
+--                if u_temp1(0) = '1' then
+--                    u_temp2 := std_logic_vector(unsigned(u_temp1) + unsigned("00" & n));
+--                else
+--                    u_temp2 := u_temp1;
+--                end if;
+--
+--                u_reg_next <= '0' & u_temp2(k+1 downto 1);
+--                u_next <= (others => '0');
+--
+--
+--            when SUBTRACTING =>
+--                if u_reg >= n then
+--                    u_next <= std_logic_vector(unsigned(u_reg(k-1 downto 0)) - unsigned(n));
+--                else
+--                    u_next <= u_reg(k-1 downto 0);
+--                end if;
+--
+--            when others =>
+--                u_next <= (others => '0');
+--
+--            end case;
+
+        if (current_state = looping or current_state = idle) then
+            if a(loop_counter) = '1' then
+                u_temp1 := std_logic_vector(unsigned(u_reg) + unsigned("00" & b));
+            else
+                u_temp1 := u_reg;
+            end if;
+
+            if u_temp1(0) = '1' then
+                u_temp2 := std_logic_vector(unsigned(u_temp1) + unsigned("00" & n));
+            else
+                u_temp2 := u_temp1;
+            end if;
         else
-            u_temp1 := u_reg;
+            u_temp1 := (others => '0');
+            u_temp2 := (others => '0');
         end if;
 
-        if u_temp1(0) = '1' then
-            u_temp2 := std_logic_vector(unsigned(u_temp1) + unsigned("00" & n));
-        else
-            u_temp2 := u_temp1;
-        end if;
 
 
 
@@ -125,8 +163,9 @@ begin
 		end if;
 
         if current_state = SUBTRACTING then
-            if u_reg >= n then
-                u_next <= std_logic_vector(unsigned(u_reg(k-1 downto 0)) - unsigned(n));
+            if u_reg >= ("00" & n) then
+                u_next_temp := std_logic_vector(unsigned(u_reg) - unsigned("00" & n));
+                u_next <= u_next_temp(k-1 downto 0);
             else
                 u_next <= u_reg(k-1 downto 0);
             end if;
