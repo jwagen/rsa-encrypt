@@ -6,9 +6,6 @@ use ieee.numeric_std.all;
 --use ieee.numeric_std_unsigned.all;
 
 
--- Math operators
-use IEEE.math_real."ceil";
-use IEEE.math_real."log2";
 
 entity MonPro is
     generic(
@@ -63,7 +60,7 @@ begin
         end if;
     end process;
 
-    comb_proc: process (all)
+	comb_proc: process (loop_counter, u_intermediate, b, n, a, current_state, start)
         variable u_temp1 : std_logic_vector(k+1  downto 0);
         variable u_temp2 : std_logic_vector(k+1  downto 0);
         variable u_next_temp : std_logic_vector(k+1 downto 0);

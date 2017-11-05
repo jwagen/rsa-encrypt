@@ -49,6 +49,7 @@ architecture bahavioral of MonPro_tb is
 	--File for test data
 	constant testdata_filename : string := "../../../../../testbench/monpro_testdata.txt";
 	file testdata_file : TEXT;
+	signal error_counter : integer := 0;
 
 
 	-- Function for converting string of hex to std_logic_vector
@@ -123,7 +124,6 @@ begin
 		variable l : LINE;
 		variable s32: string(k/4 downto 1);          
 		variable char_dump : character;
-        variable error_counter : integer := 0;
         variable test_counter : integer := 0;
 	begin
 		-- Test with different clk periods between start and done
@@ -131,6 +131,7 @@ begin
              --report "Running tests with " & integer'image(i) & " clocks delay"  severity error;
             file_open(testdata_file, testdata_filename,  read_mode);
             -- reset the system
+            wait_until_n_falling_edges(clk, 2);
             resetn <= '0';
 
             wait_until_n_falling_edges(clk, 2);
@@ -164,7 +165,7 @@ begin
 
                 -- Check output
                 if (u /= result_file) then
-                    error_counter := error_counter + 1;
+                    error_counter <= error_counter + 1;
                     report "Result not correct, with " & integer'image(i) & " clocks delay"  severity error;
                 end if;
 

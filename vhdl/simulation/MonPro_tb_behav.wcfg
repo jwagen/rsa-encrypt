@@ -10,15 +10,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="2628027250fs"></ZoomStartTime>
-      <ZoomEndTime time="2675727251fs"></ZoomEndTime>
-      <Cursor1Time time="2658827000fs"></Cursor1Time>
+      <ZoomStartTime time="25333000000fs"></ZoomStartTime>
+      <ZoomEndTime time="26865000001fs"></ZoomEndTime>
+      <Cursor1Time time="25837000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="169"></NameColumnWidth>
-      <ValueColumnWidth column_width="199"></ValueColumnWidth>
+      <ValueColumnWidth column_width="387"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="17" />
+   <WVObjectSize size="15" />
    <wvobject type="logic" fp_name="/MonPro_tb/clk">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
@@ -34,6 +34,7 @@
    <wvobject type="array" fp_name="/MonPro_tb/a">
       <obj_property name="ElementShortName">a[127:0]</obj_property>
       <obj_property name="ObjectShortName">a[127:0]</obj_property>
+      <obj_property name="isExpanded"></obj_property>
    </wvobject>
    <wvobject type="array" fp_name="/MonPro_tb/b">
       <obj_property name="ElementShortName">b[127:0]</obj_property>
@@ -55,10 +56,6 @@
       <obj_property name="ElementShortName">CLK_PERIOD</obj_property>
       <obj_property name="ObjectShortName">CLK_PERIOD</obj_property>
    </wvobject>
-   <wvobject type="other" fp_name="/MonPro_tb/RESET_TIME">
-      <obj_property name="ElementShortName">RESET_TIME</obj_property>
-      <obj_property name="ObjectShortName">RESET_TIME</obj_property>
-   </wvobject>
    <wvobject type="other" fp_name="/MonPro_tb/k">
       <obj_property name="ElementShortName">k</obj_property>
       <obj_property name="ObjectShortName">k</obj_property>
@@ -66,10 +63,6 @@
    <wvobject type="array" fp_name="/MonPro_tb/testdata_filename">
       <obj_property name="ElementShortName">testdata_filename[1:44]</obj_property>
       <obj_property name="ObjectShortName">testdata_filename[1:44]</obj_property>
-   </wvobject>
-   <wvobject type="array" fp_name="/MonPro_tb/dut/u_reg">
-      <obj_property name="ElementShortName">u_reg[129:0]</obj_property>
-      <obj_property name="ObjectShortName">u_reg[129:0]</obj_property>
    </wvobject>
    <wvobject type="other" fp_name="/MonPro_tb/dut/loop_counter">
       <obj_property name="ElementShortName">loop_counter</obj_property>
@@ -83,8 +76,8 @@
       <obj_property name="ElementShortName">u_next[127:0]</obj_property>
       <obj_property name="ObjectShortName">u_next[127:0]</obj_property>
    </wvobject>
-   <wvobject type="array" fp_name="/MonPro_tb/dut/u_reg_next">
-      <obj_property name="ElementShortName">u_reg_next[129:0]</obj_property>
-      <obj_property name="ObjectShortName">u_reg_next[129:0]</obj_property>
+   <wvobject type="other" fp_name="/MonPro_tb/error_counter">
+      <obj_property name="ElementShortName">error_counter</obj_property>
+      <obj_property name="ObjectShortName">error_counter</obj_property>
    </wvobject>
 </wave_config>
