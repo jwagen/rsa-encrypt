@@ -38,11 +38,6 @@ architecture bahavioral of MonExp_tb is
     constant ComFileName : string :="ComFile.txt";  
     file ComFile: TEXT open read_mode is ComFileName;
 
-    signal R2RNE       : std_logic_vector(4*W_BLOCK-1 downto 0);
-    signal PlainText   : std_logic_vector(W_BLOCK-1 downto 0);
-    signal CipherText  : std_logic_vector(W_BLOCK-1 downto 0);
-    signal Result      : std_logic_vector(W_BLOCK-1 downto 0);
-    signal Command     : std_logic;
 
     function str_to_stdvec(inp: string) return std_logic_vector is
     variable temp: std_logic_vector(4*inp'length-1 downto 0) := (others => 'X');
@@ -125,25 +120,21 @@ begin
         variable s32: string(W_BLOCK/4 downto 1);      
         variable s64: string(2*W_BLOCK/4 downto 1);          
     begin
-        while not ENDFILE(testdata_file) loop
-            start <= '0';
-            wait for 1*RESET_TIME;
+        start <= '0';
+        wait for 1*RESET_TIME;
+        M <=   x"0ddddddddddddddddddddddddddddddd";
+        e <=   x"00000000000000000000000000010001";
+        n <=   x"819DC6B2574E12C3C8BC49CDD79555FD";
+        r <=   x"7E62394DA8B1ED3C3743B632286AAA03";
+        r_2 <= x"4F4F353B16D9B17CD307F02F393734D9";
+        
+        wait for 1*CLK_PERIOD;
 
-
-            M <=   x"0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
-            e <=   x"00000000000000000000000000010001";
-            n <=   x"819DC6B2574E12C3C8BC49CDD79555FD";
-            r <=   x"7E62394DA8B1ED3C3743B632286AAA03";
-            r_2 <= x"4F4F353B16D9B17CD307F02F393734D9";
-
-            wait for 1*CLK_PERIOD;
-
-            start <= '1';
-            wait for 1*CLK_PERIOD;
-            start <= '0';
-
-            wait until done = '1';
-        end loop;
+        start <= '1';
+        wait for 1*CLK_PERIOD;
+        start <= '0';
+        
+        wait until done = '1';
         --End simulation 
         assert false report "Test complete" severity failure;
     end process;
