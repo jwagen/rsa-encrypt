@@ -166,7 +166,7 @@ begin
                     x_d <= mp_u;
                 if (e(loop_counter) = '1') then 
                     mp_a <= M_q;
-                    mp_b <= x_q;
+                    mp_b <= mp_u;
                     mp_start <= '1';
                     increment_counter <= '0';
                     next_state <= MONPROLOOP_SECOND;
