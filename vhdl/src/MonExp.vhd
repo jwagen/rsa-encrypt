@@ -61,13 +61,13 @@ begin
          begin
              if rising_edge(clk) then
                 if resetn = '0' then
-                    loop_counter <= 0;
+                    loop_counter <= k-1;
                 else
                     if reset_counter = '1' then
-                        loop_counter <= 0;
+                        loop_counter <= k-1;
                     else
                         if increment_counter = '1' then
-                            loop_counter <= loop_counter + 1;
+                            loop_counter <= loop_counter - 1;
                         end if;
                     end if;
                 end if;
@@ -75,7 +75,7 @@ begin
          end process counterProc;
     regProc: process(clk, resetn)
      begin
-         if resetn = '1' then
+         if resetn = '0' then
              x_q <= (others => '0');
              M_q <= (others => '0');
          elsif rising_edge(clk) then
@@ -157,11 +157,11 @@ begin
             M_en <= '0';
             x_d <= (others => '0');
             M_d <= (others => '0');
-            mp_a <= (others => '0');
-            mp_b <= (others => '0');
-            mp_n <= (others => '0');
+            mp_a <= x_q;
+            mp_b <= x_q;
+            mp_n <= n;
             mp_start <= '0';  -- TODO: Remove the ones with no effect from this
-            if loop_counter = k-1 then 
+            if loop_counter = 0 then 
                 mp_a <= x_q;
                 mp_b <= (others => '0');
                 mp_b(0) <= '1';
@@ -178,14 +178,10 @@ begin
                 if (e(loop_counter) = '1') then 
                     mp_a <= M_q;
                     mp_b <= x_q;
-                    mp_n <= n;
                     mp_start <= '1';
                     increment_counter <= '0';
                     next_state <= MONPROLOOP_SECOND;
                 else
-                    mp_a <= x_q;
-                    mp_b <= x_q;
-                    mp_n <= n;
                     mp_start <= '1';
                     increment_counter <= '1';
                 end if;
@@ -201,9 +197,9 @@ begin
             M_en <= '0';
             x_d <= (others => '0');
             M_d <= (others => '0');
-            mp_a <= (others => '0');
-            mp_b <= (others => '0');
-            mp_n <= (others => '0');
+            mp_a <= M_q;
+            mp_b <= x_q;
+            mp_n <= n;
             mp_start <= '0';  -- TODO: Remove the ones with no effect from this
             if mp_done = '1' then
                 x_en <= '1';
