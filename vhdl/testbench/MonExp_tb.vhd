@@ -58,20 +58,19 @@ begin
     begin
         start <= '0';
         wait for 1*RESET_TIME;
-        M <= x"0000_0000_0000_0000_0000_0000_0000_0003";
-        e <= x"0000_0000_0000_0000_0000_0000_0000_0003";
-        n <= x"0000_0000_0000_0000_0000_0000_0000_000b";
-        r <= x"0000_0000_0000_0000_0000_0000_0000_0003";
-        r_2 <= x"0000_0000_0000_0000_0000_0000_0000_0003";
+       
+        
+        M <=   x"0AAA AAAA AAAA AAAA AAAA AAAA AAAA AAAA";
+        e <=   x"0000 0000 0000 0000 0000 0000 0001 0001";
+        n <=   x"819D C6B2 574E 12C3 C8BC 49CD D795 55FD";
+        r <=   x"4F4F 353B 16D9 B17C D307 F02F 3937 34D9";
+        r_2 <= x"7E62 394D A8B1 ED3C 3743 B632 286A AA03";
         wait for 1*CLK_PERIOD;
 
         start <= '1';
         wait for 1*CLK_PERIOD;
         start <= '0';
         
-        wait for 128*CLK_PERIOD; -- Waiting for precalculations
-        wait for 128*128*CLK_PERIOD;  -- Waiting for main loop
-        wait for 128*CLK_PERIOD;  -- Waiting for postcalculations
         wait until done = '1';
         --End simulation 
 		assert false report "Test complete" severity failure;
