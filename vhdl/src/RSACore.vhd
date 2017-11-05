@@ -192,8 +192,9 @@ begin
                     CoreFinished <= '1';
                     count <= '0';
                     me_start <= '0';
-                    M_reg_en <= '1';
+                    M_reg_en <= '0';
                      if StartRsa = '1' then
+                         M_reg_en <= '1';
                          next_state <= LOADINGMSG;
                      elsif InitRsa = '1' then -- TODO: Check this
                          config_reg_en <= '1';
@@ -206,7 +207,7 @@ begin
                     output_reg_en <= '0';
                     output_reg_load <= '0';
                     config_reg_en <= '0';
-                    M_reg_en <= '0';
+                    M_reg_en <= '1';
                     CoreFinished <= '0';
                     count <= '1';
                     me_start <= '0';

@@ -161,34 +161,64 @@ begin
             mp_b <= x_q;
             mp_n <= n;
             mp_start <= '0';  -- TODO: Remove the ones with no effect from this
-            if loop_counter = 0 then 
-                mp_a <= x_q;
-                mp_b <= (others => '0');
-                mp_b(0) <= '1';
-                mp_n <= n;
-                mp_start <= '1';
-                next_state <= POSTX;
-                increment_counter <= '0';
-            --else
-            --    next_state <= MONPROLOOP_FIRST;
-            --end if;
-            elsif mp_done = '1' then
-                x_en <= '1';
-                x_d <= mp_u;
+            if mp_done = '1' then 
+                    x_en <= '1';             
+                    x_d <= mp_u;
                 if (e(loop_counter) = '1') then 
                     mp_a <= M_q;
                     mp_b <= x_q;
                     mp_start <= '1';
                     increment_counter <= '0';
                     next_state <= MONPROLOOP_SECOND;
+                elsif loop_counter = 0 then
+             
+                    mp_a <= x_q;             
+                    mp_b <= (others => '0'); 
+                    mp_b(0) <= '1';          
+                    mp_n <= n;               
+                    mp_start <= '1';         
+                    next_state <= POSTX;     
+                    increment_counter <= '0';
                 else
+                    mp_a <= mp_u;
+                    mp_b <= mp_u;
                     mp_start <= '1';
                     increment_counter <= '1';
+                    next_state <= MONPROLOOP_FIRST;
                 end if;
             else
                 next_state <= MONPROLOOP_FIRST;
-                increment_counter <= '0'; -- TODO: For testing, set this to 1, when monpro fixed, set to 0
+                increment_counter <= '0';
             end if;
+            --if loop_counter = 0 and mp_done = '1' then 
+            --    x_en <= '1';
+            --    x_d <= mp_u;
+            --    mp_a <= x_q;
+            --    mp_b <= (others => '0');
+            --    mp_b(0) <= '1';
+            --    mp_n <= n;
+            --    mp_start <= '1';
+            --    next_state <= POSTX;
+            --    increment_counter <= '0';
+            --elsif mp_done = '1' then
+            --    mp_a <= mp_u;
+            --    mp_b <= mp_u;
+            --    x_en <= '1';
+            --    x_d <= mp_u;
+            --    if (e(loop_counter) = '1') then 
+            --        mp_a <= M_q;
+            --        mp_b <= x_q;
+            --        mp_start <= '1';
+            --        increment_counter <= '0';
+            --        next_state <= MONPROLOOP_SECOND;
+            --    else
+            --        mp_start <= '1';
+            --        increment_counter <= '1';
+            --    end if;
+            --else
+            --    next_state <= MONPROLOOP_FIRST;
+            --    increment_counter <= '0'; -- TODO: For testing, set this to 1, when monpro fixed, set to 0
+            --end if;
         when MONPROLOOP_SECOND =>
             reset_counter <= '0';
             done <= '0';
@@ -204,12 +234,18 @@ begin
             if mp_done = '1' then
                 x_en <= '1';
                 x_d <= mp_u;
-                mp_a <= x_q;
-                mp_b <= x_q;
+                mp_a <= mp_u;
+                mp_b <= mp_u;
                 mp_n <= n;
                 mp_start <= '1';
                 increment_counter <= '1';
                 next_state <= MONPROLOOP_FIRST;
+                if loop_counter = 0 then                    
+                    mp_b <= (others => '0'); 
+                    mp_b(0) <= '1';                             
+                    next_state <= POSTX;     
+                    increment_counter <= '0';
+                end if;
             else
                 mp_start <= '0'; -- Unnedeed
                 increment_counter <= '0'; -- TODO: For testing, set this to 1, when monpro fixed, set to 0
