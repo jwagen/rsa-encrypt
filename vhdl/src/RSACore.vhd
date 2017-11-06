@@ -34,11 +34,6 @@ architecture circuit of RSACore is
     constant params : integer := 16; --TODO 4*k/W_DATA;  -- 4 params of 128bit, 4*128/32=16
     constant msg_parts : integer := k/W_DATA;
     -- MonExp signals
-    --signal me_M           : std_logic_vector(k -1 downto 0);
-    --signal me_e           : std_logic_vector(k -1 downto 0);
-    --signal me_n           : std_logic_vector(k -1 downto 0);
-    --signal me_r           : std_logic_vector(k -1 downto 0);
-    --signal me_r_2         : std_logic_vector(k -1 downto 0);
     signal me_start       : std_logic;
     signal me_done        : std_logic;
     signal me_output      : std_logic_vector(k -1 downto 0);
@@ -73,20 +68,13 @@ begin
       r_2_r <= (others => '0');     
     elsif rising_edge(clk) then
       if(config_reg_en ='1') then
-        e_r <= e_nxt;
-        n_r <= n_nxt;
-        r_r <= r_nxt;
-        r_2_r <= r_2_nxt;        
+        r_2_r <= DataIn & r_2_r(127 downto 32);
+        r_r <= r_2_r(31 downto 0) & r_r(127 downto 32);
+        n_r <= r_r(31 downto 0) & n_r(127 downto 32);
+        e_r <= n_r(31 downto 0) & e_r(127 downto 32);      
       end if;
     end if;
   end process;
-    
-  process (DataIn, e_r, n_r, r_r, r_2_r) begin
-    r_2_nxt <= DataIn & r_2_r(127 downto 32);
-    r_nxt <= r_2_r(31 downto 0) & r_r(127 downto 32);
-    n_nxt <= r_r(31 downto 0) & n_r(127 downto 32);
-    e_nxt <= n_r(31 downto 0) & e_r(127 downto 32);
-  end process; 
   -- ***************************************************************************
   -- Register M_r
   -- ***************************************************************************
@@ -95,14 +83,10 @@ begin
       M_r <= (others => '0');    
     elsif rising_edge(clk) then
       if(M_reg_en ='1') then
-        M_r <= M_nxt;     
+        M_r <= DataIn & M_r(127 downto 32);   
       end if;
     end if;
   end process;
-    
-  process (DataIn, M_r) begin
-    M_nxt <= DataIn & M_r(127 downto 32);
-  end process; 
 -- ***************************************************************************
     -- Register result_r for outputing data
     -- Logic for shifting out the content of result_r to data_out
@@ -112,17 +96,17 @@ begin
         result_r <= (others => '0');     
       elsif rising_edge(clk) then
         if(output_reg_en ='1') then
-          result_r <= result_nxt;       
+            if(output_reg_load = '1') then
+                result_r <= me_output;
+            else
+                result_r <= x"00000000" & result_r(127 downto 32);
+            end if;       
         end if;
       end if;
     end process;
     
     process (result_r, me_output, output_reg_load) begin
-      if(output_reg_load = '1') then
-        result_nxt <= me_output;
-      else
-        result_nxt <= x"00000000" & result_r(127 downto 32);
-      end if;
+
     end process;
     DataOut <= result_r(31 downto 0);
 -- ***************************************************************************
