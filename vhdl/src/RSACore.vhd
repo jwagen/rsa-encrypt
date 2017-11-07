@@ -31,7 +31,7 @@ end RSACore;
 architecture circuit of RSACore is
     constant k : integer := 128;
     --TODO: IN TESTBENCH ONLY 8 SENT, should change 2 to 4
-    constant params : integer := 16; --TODO 4*k/W_DATA;  -- 4 params of 128bit, 4*128/32=16
+    constant params : integer    := 16; --TODO 4*k/W_DATA;  -- 4 params of 128bit, 4*128/32=16
     constant msg_parts : integer := k/W_DATA;
     -- MonExp signals
     signal me_start       : std_logic;
@@ -45,15 +45,15 @@ architecture circuit of RSACore is
     signal count          : std_logic;
     -- Config registers
     signal config_reg_en   : std_logic;
-    signal e_r, e_nxt     : std_logic_vector(k-1 downto 0);
-    signal n_r, n_nxt     : std_logic_vector(k-1 downto 0);
-    signal r_r, r_nxt     : std_logic_vector(k-1 downto 0);
-    signal r_2_r, r_2_nxt     : std_logic_vector(k-1 downto 0);
+    signal e_r     : std_logic_vector(k-1 downto 0);
+    signal n_r     : std_logic_vector(k-1 downto 0);
+    signal r_r     : std_logic_vector(k-1 downto 0);
+    signal r_2_r   : std_logic_vector(k-1 downto 0);
     -- Message registers
-    signal M_reg_en   : std_logic;
-    signal M_r, M_nxt     : std_logic_vector(k-1 downto 0);
+    signal M_reg_en : std_logic;
+    signal M_r      : std_logic_vector(k-1 downto 0);
     -- Output registers
-    signal result_r, result_nxt: std_logic_vector(127 downto 0);
+    signal result_r        : std_logic_vector(127 downto 0);
     Signal output_reg_en   : std_logic;
     Signal output_reg_load : std_logic;
 begin
@@ -67,7 +67,7 @@ begin
       r_r <= (others => '0');
       r_2_r <= (others => '0');     
     elsif rising_edge(clk) then
-      if(config_reg_en ='1') then
+      if(config_reg_en = '1') then
         r_2_r <= DataIn & r_2_r(127 downto 32);
         r_r <= r_2_r(31 downto 0) & r_r(127 downto 32);
         n_r <= r_r(31 downto 0) & n_r(127 downto 32);
@@ -105,9 +105,6 @@ begin
       end if;
     end process;
     
-    process (result_r, me_output, output_reg_load) begin
-
-    end process;
     DataOut <= result_r(31 downto 0);
 -- ***************************************************************************
     me : entity work.MonExp
@@ -130,24 +127,33 @@ begin
                  current_state <= INIT;
              elsif rising_edge(clk) then
                  current_state <= next_state;
+             end if;
+     end process fsm_SynchProc;
+     CounterProc : process (resetn, clk)
+         begin
+             if (resetn = '0') then
+                 loop_counter <= 0;
+             elsif rising_edge(clk) then
                  if count = '1' then 
                     loop_counter <= loop_counter + 1;
                  else
                     loop_counter <= 0;
                  end if;
              end if;
-    end process fsm_SynchProc;
+    end process CounterProc;
     fsm_CombProc : process (current_state, me_done, InitRsa, StartRsa, loop_counter)-- TODO: Update this list
          begin
+             config_reg_en <= '0';
+             output_reg_en <= '0';
+             output_reg_load <= '0';
+             me_start <= '0';
+             M_reg_en <= '0';
+             count <= '0';
+             CoreFinished <= '0'; -- TODO: Change this to 1, and to 0 in states?
+             next_state <= current_state;
              case (current_state) is
-                 when INIT       =>
-                    output_reg_en <= '0';
-                    output_reg_load <= '0';
-                    config_reg_en <= '0';
+                 when INIT       =>     
                     CoreFinished <= '1';
-                    count <= '0';
-                    me_start <= '0';
-                    M_reg_en <= '0';
                     if InitRsa = '1' then
                         config_reg_en <= '1';
                         count <= '1';
@@ -156,13 +162,8 @@ begin
                         next_state <= INIT;
                     end if;
                  when LOADCONF   =>
-                    output_reg_en <= '0';
-                    output_reg_load <= '0';
                     config_reg_en <= '1';
-                    M_reg_en <= '0';
-                    CoreFinished <= '0';
                     count <= '1';
-                    me_start <= '0';
                     if loop_counter = params - 1 then
                         count <= '0';
                         next_state <= WAITFORMSG;
@@ -170,13 +171,7 @@ begin
                         next_state <= LOADCONF;
                     end if;
                  when WAITFORMSG =>
-                    output_reg_en <= '0';
-                    output_reg_load <= '0';
-                    config_reg_en <= '0';
                     CoreFinished <= '1';
-                    count <= '0';
-                    me_start <= '0';
-                    M_reg_en <= '0';
                      if StartRsa = '1' then
                          M_reg_en <= '1';
                          next_state <= LOADINGMSG;
@@ -188,13 +183,8 @@ begin
                          next_state <= WAITFORMSG;
                      end if;
                  when LOADINGMSG =>
-                    output_reg_en <= '0';
-                    output_reg_load <= '0';
-                    config_reg_en <= '0';
                     M_reg_en <= '1';
-                    CoreFinished <= '0';
                     count <= '1';
-                    me_start <= '0';
                     if loop_counter = msg_parts - 1 then
                         count <= '0';
                         M_reg_en <= '0';
@@ -202,23 +192,10 @@ begin
                     else
                         next_state <= LOADINGMSG;
                     end if;
-                 when STARTCALC       =>
-                    output_reg_en <= '0';
-                    output_reg_load <= '0';
-                    M_reg_en <= '0';
-                    config_reg_en <= '0';
-                    CoreFinished <= '0';
-                    count <= '0';
+                 when STARTCALC       => -- TODO: Can this be removed?
                     me_start <= '1';
                     next_state <= CALC;
                  when CALC       =>
-                    output_reg_en <= '0';
-                    output_reg_load <= '0';
-                    config_reg_en <= '0';
-                    M_reg_en <= '0';
-                    CoreFinished <= '0';
-                    count <= '0';
-                    me_start <= '0';
                     if me_done = '1' then
                         next_state <= UNLOADANS;
                         output_reg_en <= '1';
@@ -229,11 +206,7 @@ begin
                  when UNLOADANS  =>
                     CoreFinished <= '1';
                     output_reg_en <= '1';
-                    M_reg_en <= '0';
-                    config_reg_en <= '0';
-                    output_reg_load <= '0';
                     count <= '1';
-                    me_start <= '0';
                     if loop_counter = msg_parts - 1 then
                         next_state <= WAITFORMSG;
                         output_reg_en <= '0';
@@ -243,12 +216,6 @@ begin
                     end if;
                  when others     => --Should NOT happen
                     next_state <= INIT;
-                    output_reg_en <= '0';
-                    output_reg_load <= '0';
-                    M_reg_en <= '0';
-                    config_reg_en <= '0';
-                    count <= '0';
-                    me_start <= '0';
                     CoreFinished <= '1';
              end case;
     end process fsm_CombProc;
