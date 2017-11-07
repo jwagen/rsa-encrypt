@@ -41,7 +41,7 @@ architecture circuit of RSACore is
     type state is (INIT, LOADCONF, WAITFORMSG, LOADINGMSG, STARTCALC, CALC, UNLOADANS);
     signal current_state  : state;
     signal next_state     : state;
-    signal loop_counter   : natural range 0 to params-1 := 0;
+    signal loop_counter   : natural range 0 to params-1;
     signal count          : std_logic;
     -- Config registers
     signal config_reg_en   : std_logic;
