@@ -1,0 +1,65 @@
+Warning (292006): Can't contact license server "1717@quartus.license.iet.ntnu.no" -- this server will be ignored
+Info: *******************************************************************
+Info: Running Quartus II 32-bit Analysis & Synthesis
+    Info: Version 13.0.1 Build 232 06/12/2013 Service Pack 1 SJ Full Version
+    Info: Copyright (C) 1991-2013 Altera Corporation. All rights reserved.
+    Info: Your use of Altera Corporation's design tools, logic functions 
+    Info: and other software and tools, and its AMPP partner logic 
+    Info: functions, and any output files from any of the foregoing 
+    Info: (including device programming or simulation files), and any 
+    Info: associated documentation or information are expressly subject 
+    Info: to the terms and conditions of the Altera Program License 
+    Info: Subscription Agreement, Altera MegaCore Function License 
+    Info: Agreement, or other applicable license agreement, including, 
+    Info: without limitation, that your use is for the sole purpose of 
+    Info: programming logic devices manufactured by Altera and sold by 
+    Info: Altera or its authorized distributors.  Please refer to the 
+    Info: applicable agreement for further details.
+    Info: Processing started: Tue Nov 07 21:27:48 2017
+Info: Command: quartus_map --read_settings_files=on --write_settings_files=off RSA -c RSA
+Info (125069): Default assignment values were changed in the current version of the Quartus II software -- changes to default assignments values are contained in file c:/altera/10.0/quartus/bin/assignment_defaults.qdf
+Info (20030): Parallel compilation is enabled and will use 6 of the 6 processors detected
+Info (12021): Found 2 design units, including 1 entities, in source file monpro.vhd
+    Info (12022): Found design unit 1: MonPro-circuit
+    Info (12023): Found entity 1: MonPro
+Info (12021): Found 2 design units, including 1 entities, in source file monexp.vhd
+    Info (12022): Found design unit 1: MonExp-circuit
+    Info (12023): Found entity 1: MonExp
+Info (12021): Found 2 design units, including 1 entities, in source file rsacore.vhd
+    Info (12022): Found design unit 1: RSACore-circuit
+    Info (12023): Found entity 1: RSACore
+Info (12021): Found 1 design units, including 0 entities, in source file /users/tfe4141/desktop/rsa/link_vhdl_mont/rsaparameters.vhd
+    Info (12022): Found design unit 1: RSAParameters
+Info (12021): Found 1 design units, including 0 entities, in source file /users/tfe4141/desktop/rsa/link_vhdl_mont/compdecl.vhd
+    Info (12022): Found design unit 1: CompDecl
+Info (12021): Found 2 design units, including 1 entities, in source file /users/tfe4141/desktop/rsa/link_vhdl_mont/uart.vhd
+    Info (12022): Found design unit 1: UART-rtl
+    Info (12023): Found entity 1: UART
+Info (12021): Found 2 design units, including 1 entities, in source file /users/tfe4141/desktop/rsa/link_vhdl_mont/rsaextcom.vhd
+    Info (12022): Found design unit 1: RSAExtCom-rtl
+    Info (12023): Found entity 1: RSAExtCom
+Info (12021): Found 2 design units, including 1 entities, in source file /users/tfe4141/desktop/rsa/link_vhdl_mont/rsa.vhd
+    Info (12022): Found design unit 1: RSA-struct
+    Info (12023): Found entity 1: RSA
+Info (12127): Elaborating entity "RSA" for the top level hierarchy
+Info (12128): Elaborating entity "RSACore" for hierarchy "RSACore:R"
+Info (12128): Elaborating entity "MonExp" for hierarchy "RSACore:R|MonExp:me"
+Info (12128): Elaborating entity "MonPro" for hierarchy "RSACore:R|MonExp:me|MonPro:mp"
+Info (12128): Elaborating entity "UART" for hierarchy "UART:U"
+Info (12128): Elaborating entity "RSAExtCom" for hierarchy "RSAExtCom:C"
+Warning (10036): Verilog HDL or VHDL warning at RSAExtCom.vhd(71): object "LedCtrlState" assigned a value but never read
+Warning (10036): Verilog HDL or VHDL warning at RSAExtCom.vhd(78): object "LedCtr" assigned a value but never read
+Info (13000): Registers with preset signals will power-up high
+Info (13003): DEV_CLRn pin will set, and not reset, register with preset signal due to NOT Gate Push-Back
+Info (286030): Timing-Driven Synthesis is running
+Info (16010): Generating hard_block partition "hard_block:auto_generated_inst"
+    Info (16011): Adding 0 node(s), including 0 DDIO, 0 PLL, 0 transceiver and 0 LCELL
+Info (21057): Implemented 5189 device resources after synthesis - the final resource count might be different
+    Info (21058): Implemented 3 input pins
+    Info (21059): Implemented 15 output pins
+    Info (21061): Implemented 5171 logic cells
+Info: Quartus II 32-bit Analysis & Synthesis was successful. 0 errors, 3 warnings
+    Info: Peak virtual memory: 463 megabytes
+    Info: Processing ended: Tue Nov 07 21:28:30 2017
+    Info: Elapsed time: 00:00:42
+    Info: Total CPU time (on all processors): 00:00:32

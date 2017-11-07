@@ -1,0 +1,32 @@
+Info: *******************************************************************
+Info: Running Quartus II 32-bit Programmer
+    Info: Version 13.0.1 Build 232 06/12/2013 Service Pack 1 SJ Full Version
+    Info: Copyright (C) 1991-2013 Altera Corporation. All rights reserved.
+    Info: Your use of Altera Corporation's design tools, logic functions 
+    Info: and other software and tools, and its AMPP partner logic 
+    Info: functions, and any output files from any of the foregoing 
+    Info: (including device programming or simulation files), and any 
+    Info: associated documentation or information are expressly subject 
+    Info: to the terms and conditions of the Altera Program License 
+    Info: Subscription Agreement, Altera MegaCore Function License 
+    Info: Agreement, or other applicable license agreement, including, 
+    Info: without limitation, that your use is for the sole purpose of 
+    Info: programming logic devices manufactured by Altera and sold by 
+    Info: Altera or its authorized distributors.  Please refer to the 
+    Info: applicable agreement for further details.
+    Info: Processing started: Tue Nov 07 21:29:57 2017
+Info: Command: quartus_pgm -c USB-Blaster -m jtag -o p;RSA.sof
+Info (213045): Using programming cable "USB-Blaster [USB-0]"
+Info (213011): Using programming file RSA.sof with checksum 0x00881A3E for device EP4CE115F29@1
+Info (209060): Started Programmer operation at Tue Nov 07 21:30:00 2017
+Info (209016): Configuring device index 1
+Info (209017): Device 1 contains JTAG ID code 0x020F70DD
+Info (209007): Configuration succeeded -- 1 device(s) configured
+Info (209011): Successfully performed operation(s)
+Info (209061): Ended Programmer operation at Tue Nov 07 21:30:07 2017
+Info: Quartus II 32-bit Programmer was successful. 0 errors, 0 warnings
+    Info: Peak virtual memory: 179 megabytes
+    Info: Processing ended: Tue Nov 07 21:30:07 2017
+    Info: Elapsed time: 00:00:10
+    Info: Total CPU time (on all processors): 00:00:01
+

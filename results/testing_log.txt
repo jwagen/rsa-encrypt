@@ -1,0 +1,40 @@
+Using static key
+Short test 1: PASSED
+Using static key
+Short test 2: PASSED
+Using static key
+Short test 3: PASSED
+Using static key
+Short test 4: PASSED
+Using static key
+Short test 5: PASSED
+Using static key
+Main test: PASSED
+All tests passed!
+###################################################################
+Congratulations group13!               
+                                                                
+Your design passed the test! 	
+Your countless sleepless nights have finally paid off! 
+
+                                                ,w.
+                                              ,YWMMw  ,M  ,
+                         _.---.._   __..---._.'MMMMMw,wMWmW,
+                    _.-""        """           YP"WMMMMMMMMMb,
+                 .-' __.'                   .'     MMMMW^WMMMM;
+     _,        .'.-'"; `,       /`     .--""      :MMM[==MWMW^;
+  ,mM^"     ,-'.'   /   ;      ;      /   ,       MMMMb_wMW"  @\
+ ,MM:.    .'.-'   .'     ;     `\    ;     `,     MMMMMMMW `"=./`-,
+ WMMm__,-'.'     /      _.\      F"""-+,,   ;_,_.dMMMMMMMM[,_ / `=_}
+ "^MP__.-'    ,-' _.--""   `-,   ;       \  ; ;MMMMMMMMMMW^``; __|
+            /   .'            ; ;         )  )`{  \ `"^W^`,   \  :
+           /  .'             /  (       .'  /     Ww._     `.  `"
+          /  Y,              `,  `-,=,_{   ;      MMMP`""-,  `-._.-,
+         (--, )                `,_ / `) \/"")      ^"      `-, -;"\:
+          `"""                    `"""   `"'                  `---" 
+Average cycles per block: 20839
+Number of latches: 0
+Logic cells used: 3000
+fmax: 36.21 MHz
+Throughput: 1738 blocks/second
+
