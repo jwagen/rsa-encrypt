@@ -1,64 +1,54 @@
 -- Top level disign of rsa crpyto core
 
---TODO:
--- * Should enter LOADCONF one cycle earlier
--- * Perhaps outputs should be changed/set when changing states, not in the states? Would fix both the one above and counters going one too far.
--- * Use rising_edge on InitRsa and StartRsa?
--- * Need to find out how to send the two extra parameters in simulation
--- * All states should be able to return to init(add if InitRsa to each statement)
--- * Trouble when reconfiguring?
--- * Change every clocked process to use rising_edge()
-
-
 library ieee;
 use ieee.std_logic_1164.all;
 
-
 entity RSACore is
     generic(
-    W_DATA           : Positive := 32 --TODO: Is this supposed to be gotten from somewhere else?
-);
-  port (    
-  Clk              :  in std_logic;
-  Resetn           :  in std_logic;
-  InitRsa          :  in std_logic;
-  StartRsa         :  in std_logic;
-  DataIn           :  in std_logic_vector(W_DATA-1 downto 0);
-  DataOut          :  out std_logic_vector(W_DATA-1 downto 0);
-  CoreFinished     :  out std_logic        
-);
+    W_DATA           : Positive := 32; -- Size in bits of DataIn and DataOut, name keept the same as from handout testbench
+    msg_length_bits  : integer := 128;
+    nr_of_datapackets: integer := 4
+    );
+    port (    
+    Clk              :  in std_logic;
+    Resetn           :  in std_logic;
+    InitRsa          :  in std_logic;
+    StartRsa         :  in std_logic;
+    DataIn           :  in std_logic_vector(W_DATA-1 downto 0);
+    DataOut          :  out std_logic_vector(W_DATA-1 downto 0);
+    CoreFinished     :  out std_logic        
+    );
 end RSACore;
 architecture circuit of RSACore is
-    constant k : integer := 128;
-    --TODO: IN TESTBENCH ONLY 8 SENT, should change 2 to 4
-    constant params : integer    := 16; --TODO 4*k/W_DATA;  -- 4 params of 128bit, 4*128/32=16
-    constant msg_parts : integer := k/W_DATA;
+    -- Setup constants
+    constant msg_parts : integer := msg_length_bits/W_DATA;
+    constant nr_of_msg_parts_in_datapackets : integer    := nr_of_datapackets*msg_parts;
     -- MonExp signals
     signal me_start       : std_logic;
     signal me_done        : std_logic;
-    signal me_output      : std_logic_vector(k -1 downto 0);
+    signal me_output      : std_logic_vector(msg_length_bits -1 downto 0);
     -- Control data
-    type state is (INIT, LOADCONF, WAITFORMSG, LOADINGMSG, STARTCALC, CALC, UNLOADANS);
+    type state is (INIT, LOADCONF, WAITFORMSG, LOADINGMSG, CALC, UNLOADANS);
     signal current_state  : state;
     signal next_state     : state;
-    signal loop_counter   : natural range 0 to params-1;
+    signal loop_counter   : natural range 0 to nr_of_msg_parts_in_datapackets-1;
     signal count          : std_logic;
     -- Config registers
     signal config_reg_en   : std_logic;
-    signal e_r     : std_logic_vector(k-1 downto 0);
-    signal n_r     : std_logic_vector(k-1 downto 0);
-    signal r_r     : std_logic_vector(k-1 downto 0);
-    signal r_2_r   : std_logic_vector(k-1 downto 0);
-    -- Message registers
+    signal e_r     : std_logic_vector(msg_length_bits-1 downto 0);
+    signal n_r     : std_logic_vector(msg_length_bits-1 downto 0);
+    signal r_r     : std_logic_vector(msg_length_bits-1 downto 0);
+    signal r_2_r   : std_logic_vector(msg_length_bits-1 downto 0);
+    -- Message register
     signal M_reg_en : std_logic;
-    signal M_r      : std_logic_vector(k-1 downto 0);
-    -- Output registers
-    signal result_r        : std_logic_vector(127 downto 0);
+    signal M_r      : std_logic_vector(msg_length_bits-1 downto 0);
+    -- Output register
+    signal result_r        : std_logic_vector(msg_length_bits-1 downto 0);
     Signal output_reg_en   : std_logic;
     Signal output_reg_load : std_logic;
 begin
-
-  -- Register e_r, n_r, r_r and r_2_r
+  -- ***************************************************************************
+  -- Registers for configuration: e_r, n_r, r_r and r_2_r
   -- ***************************************************************************
   process (clk, resetn) begin
     if(resetn = '0') then
@@ -68,29 +58,29 @@ begin
       r_2_r <= (others => '0');     
     elsif rising_edge(clk) then
       if(config_reg_en = '1') then
-        r_2_r <= DataIn & r_2_r(127 downto 32);
-        r_r <= r_2_r(31 downto 0) & r_r(127 downto 32);
-        n_r <= r_r(31 downto 0) & n_r(127 downto 32);
-        e_r <= n_r(31 downto 0) & e_r(127 downto 32);      
+        r_2_r <= DataIn & r_2_r(msg_length_bits-1 downto W_DATA);
+        r_r <= r_2_r(W_DATA-1 downto 0) & r_r(msg_length_bits-1 downto W_DATA);
+        n_r <= r_r(W_DATA-1 downto 0) & n_r(msg_length_bits-1 downto W_DATA);
+        e_r <= n_r(W_DATA-1 downto 0) & e_r(msg_length_bits-1 downto W_DATA);      
       end if;
     end if;
   end process;
   -- ***************************************************************************
-  -- Register M_r
+  -- Register for message: M_r
   -- ***************************************************************************
   process (clk, resetn) begin
     if(resetn = '0') then
       M_r <= (others => '0');    
     elsif rising_edge(clk) then
       if(M_reg_en ='1') then
-        M_r <= DataIn & M_r(127 downto 32);   
+        M_r <= DataIn & M_r(msg_length_bits-1 downto W_DATA);   
       end if;
     end if;
   end process;
--- ***************************************************************************
-    -- Register result_r for outputing data
-    -- Logic for shifting out the content of result_r to data_out
-    -- ***************************************************************************
+  -- ***************************************************************************
+  -- Register for output: result_r
+  -- Logic for shifting the content of result_r to data_out
+  -- ***************************************************************************
     process (clk, resetn) begin
       if(resetn = '0') then
         result_r <= (others => '0');     
@@ -99,14 +89,16 @@ begin
             if(output_reg_load = '1') then
                 result_r <= me_output;
             else
-                result_r <= x"00000000" & result_r(127 downto 32);
+                result_r <= (W_DATA-1 downto 0 => '0') & result_r(msg_length_bits-1 downto W_DATA);
             end if;       
         end if;
       end if;
     end process;
     
-    DataOut <= result_r(31 downto 0);
--- ***************************************************************************
+    DataOut <= result_r(W_DATA-1 downto 0);
+  -- ***************************************************************************
+  -- Attaching the montgomery exponential calculating circuit
+  -- ***************************************************************************
     me : entity work.MonExp
     port map (
         clk         => clk,          
@@ -120,7 +112,24 @@ begin
         done        => me_done,  
         output      => me_output   
              );
-         
+  -- ***************************************************************************
+  -- Counter circuit for controlling shifting in and out
+  -- ***************************************************************************
+     CounterProc : process (resetn, clk)
+      begin
+          if (resetn = '0') then
+              loop_counter <= 0;
+          elsif rising_edge(clk) then
+              if count = '1' then 
+                 loop_counter <= loop_counter + 1;
+              else
+                 loop_counter <= 0;
+              end if;
+          end if;
+    end process CounterProc;
+  -- ***************************************************************************
+  -- FSM for controlling the whole circuit
+  -- ***************************************************************************
      fsm_SynchProc : process (resetn, clk)
          begin
              if (resetn = '0') then
@@ -129,19 +138,7 @@ begin
                  current_state <= next_state;
              end if;
      end process fsm_SynchProc;
-     CounterProc : process (resetn, clk)
-         begin
-             if (resetn = '0') then
-                 loop_counter <= 0;
-             elsif rising_edge(clk) then
-                 if count = '1' then 
-                    loop_counter <= loop_counter + 1;
-                 else
-                    loop_counter <= 0;
-                 end if;
-             end if;
-    end process CounterProc;
-    fsm_CombProc : process (current_state, me_done, InitRsa, StartRsa, loop_counter)-- TODO: Update this list
+    fsm_CombProc : process (current_state, me_done, InitRsa, StartRsa, loop_counter)
          begin
              config_reg_en <= '0';
              output_reg_en <= '0';
@@ -149,11 +146,11 @@ begin
              me_start <= '0';
              M_reg_en <= '0';
              count <= '0';
-             CoreFinished <= '0'; -- TODO: Change this to 1, and to 0 in states?
+             CoreFinished <= '1'; -- Only goes low when the circuit is working.
              next_state <= current_state;
              case (current_state) is
                  when INIT       =>     
-                    CoreFinished <= '1';
+                    
                     if InitRsa = '1' then
                         config_reg_en <= '1';
                         count <= '1';
@@ -162,20 +159,20 @@ begin
                         next_state <= INIT;
                     end if;
                  when LOADCONF   =>
+                    CoreFinished <= '0';
                     config_reg_en <= '1';
                     count <= '1';
-                    if loop_counter = params - 1 then
+                    if loop_counter = nr_of_msg_parts_in_datapackets - 1 then
                         count <= '0';
                         next_state <= WAITFORMSG;
                     else
                         next_state <= LOADCONF;
                     end if;
                  when WAITFORMSG =>
-                    CoreFinished <= '1';
                      if StartRsa = '1' then
                          M_reg_en <= '1';
                          next_state <= LOADINGMSG;
-                     elsif InitRsa = '1' then -- TODO: Check this
+                     elsif InitRsa = '1' then
                          config_reg_en <= '1';
                          count <= '1';
                          next_state <= LOADCONF;
@@ -183,19 +180,19 @@ begin
                          next_state <= WAITFORMSG;
                      end if;
                  when LOADINGMSG =>
+                    CoreFinished <= '0';
                     M_reg_en <= '1';
                     count <= '1';
                     if loop_counter = msg_parts - 1 then
                         count <= '0';
                         M_reg_en <= '0';
-                        next_state <= STARTCALC;
+                        me_start <= '1'; 
+                        next_state <= CALC;
                     else
                         next_state <= LOADINGMSG;
                     end if;
-                 when STARTCALC       => -- TODO: Can this be removed?
-                    me_start <= '1';
-                    next_state <= CALC;
                  when CALC       =>
+                    CoreFinished <= '0';
                     if me_done = '1' then
                         next_state <= UNLOADANS;
                         output_reg_en <= '1';
@@ -204,7 +201,6 @@ begin
                         next_state <= CALC;
                     end if;
                  when UNLOADANS  =>
-                    CoreFinished <= '1';
                     output_reg_en <= '1';
                     count <= '1';
                     if loop_counter = msg_parts - 1 then
@@ -214,10 +210,8 @@ begin
                     else
                         next_state <= UNLOADANS;
                     end if;
-                 when others     => --Should NOT happen
+                 when others     =>
                     next_state <= INIT;
-                    CoreFinished <= '1';
              end case;
     end process fsm_CombProc;
-    
 end architecture;
