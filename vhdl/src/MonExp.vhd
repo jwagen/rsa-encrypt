@@ -23,10 +23,10 @@ entity MonExp is
 end MonExp; 
 
 architecture circuit of MonExp is
-    signal loop_counter : natural range 0 to msg_length_bits-1;
-    type state is (IDLE, PREPARE, MONPROLOOP_FIRST, MONPROLOOP_SECOND, POSTX, FINISHED); --TODO
-    signal current_state: state;
-    signal next_state: state;
+    -- Controll
+    type state is (IDLE, PREPARE, MONPROLOOP_FIRST, MONPROLOOP_SECOND, POSTX, FINISHED);
+    signal current_state      : state;
+    signal next_state         : state;
     -- Connections to MonPro
     signal mp_start           : std_logic;
     signal mp_a               : std_logic_vector(msg_length_bits -1 downto 0);
@@ -35,16 +35,18 @@ architecture circuit of MonExp is
     signal mp_done            : std_logic;
     signal mp_u               : std_logic_vector(msg_length_bits -1 downto 0);
     -- x_ and M_ registers    
-    signal x_q                : std_logic_vector(msg_length_bits -1 downto 0);  -- Corresponds to x_ in python script
-    signal M_q                : std_logic_vector(msg_length_bits -1 downto 0);  -- Corresponds to M_ in python script
-    signal x_d                : std_logic_vector(msg_length_bits -1 downto 0);
-    signal M_d                : std_logic_vector(msg_length_bits -1 downto 0); 
+    signal x_q, x_d           : std_logic_vector(msg_length_bits -1 downto 0);  -- Corresponds to x_ in python script
+    signal M_q, M_d           : std_logic_vector(msg_length_bits -1 downto 0);  -- Corresponds to M_ in python script
     signal M_en               : std_logic;
     signal x_en               : std_logic;
     -- Counter signals
+    signal loop_counter       : natural range 0 to msg_length_bits-1;
     signal reset_counter      : std_logic;
-    signal decrease_counter  : std_logic;
+    signal decrease_counter   : std_logic;
 begin
+  -- ***************************************************************************
+  -- Attaching the montgomery product calculating circuit
+  -- ***************************************************************************
     mp : entity work.MonPro
     port map (
         clk         => clk,          
@@ -55,7 +57,10 @@ begin
         n           => mp_n,            
         done        => mp_done,         
         u           => mp_u            
-             );
+    );
+  -- ***************************************************************************
+  -- Counter circuit with ability to stop counting and manual reset
+  -- ***************************************************************************
     counterProc : process (clk, resetn, decrease_counter, reset_counter) is
          begin
              if rising_edge(clk) then
@@ -72,6 +77,9 @@ begin
                 end if;
              end if;
          end process counterProc;
+  -- ***************************************************************************
+  -- Registers for temporary results: M_q and x_d
+  -- ***************************************************************************
     regProc: process(clk, resetn)
      begin
          if resetn = '0' then
@@ -86,12 +94,13 @@ begin
              end if;
          end if;
      end process regProc;
+  -- ***************************************************************************
+  -- FSM for controlling the whole circuit
+  -- ***************************************************************************
     fsm_SynchProc : process (resetn, clk)
     begin
         if (resetn = '0') then
             current_state <= IDLE;
-            --next_state <= IDLE;
-            --output <= (others => '0');
         elsif rising_edge(clk) then
             current_state <= next_state;
         end if;
@@ -134,9 +143,9 @@ begin
             mp_n <= n;
             if mp_done = '1' then
                 M_en <= '1';
-                M_d <= mp_u; -- Maybe this should be moved
-                mp_a <= x_q; -- TODO: Could these be changed to mp_u?
-                mp_b <= x_q; -- TODO: Could these be changed to mp_u?
+                M_d <= mp_u;
+                mp_a <= x_q;
+                mp_b <= x_q;
                 mp_start <= '1';
                 next_state <= MONPROLOOP_FIRST;
             else
@@ -156,8 +165,7 @@ begin
                     next_state <= MONPROLOOP_SECOND;
                 elsif loop_counter = 0 then
                     mp_a <= x_q;             
-                    mp_b <= (others => '0'); 
-                    mp_b(0) <= '1';          
+                    mp_b <= (msg_length_bits-1 downto 1 => '0') & '1';          
                     mp_n <= n;               
                     mp_start <= '1';         
                     next_state <= POSTX;     
@@ -185,8 +193,7 @@ begin
                 decrease_counter <= '1';
                 next_state <= MONPROLOOP_FIRST;
                 if loop_counter = 0 then                    
-                    mp_b <= (others => '0'); 
-                    mp_b(0) <= '1';                             
+                    mp_b <= (msg_length_bits-1 downto 1 => '0') & '1';                       
                     next_state <= POSTX;     
                     decrease_counter <= '0';
                 end if;
@@ -195,8 +202,7 @@ begin
             end if;
         when POSTX      =>
             mp_a <= x_q;
-            mp_b <= (others => '0'); --TODO: Write this in a nicer way
-            mp_b(0) <= '1'; --TODO: Write this in a nicer way
+            mp_b <= (msg_length_bits-1 downto 1 => '0') & '1';
             mp_n <= n;
             if mp_done = '1' then
                 x_en <= '1';
@@ -211,7 +217,7 @@ begin
             output <= x_q;
             done <= '1';
             next_state <= IDLE;
-        when others     => --Should NOT happen
+        when others     => 
             next_state <= IDLE;
         end case;
     end process fsm_CombProc;
