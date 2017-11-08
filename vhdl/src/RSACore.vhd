@@ -29,14 +29,14 @@ entity RSACore is
 );
 end RSACore;
 architecture circuit of RSACore is
-    constant k : integer := 128;
+    constant msg_length_bits : integer := 128;
     --TODO: IN TESTBENCH ONLY 8 SENT, should change 2 to 4
-    constant params : integer    := 16; --TODO 4*k/W_DATA;  -- 4 params of 128bit, 4*128/32=16
-    constant msg_parts : integer := k/W_DATA;
+    constant params : integer    := 16; --TODO 4*msg_length_bits/W_DATA;  -- 4 params of 128bit, 4*128/32=16
+    constant msg_parts : integer := msg_length_bits/W_DATA;
     -- MonExp signals
     signal me_start       : std_logic;
     signal me_done        : std_logic;
-    signal me_output      : std_logic_vector(k -1 downto 0);
+    signal me_output      : std_logic_vector(msg_length_bits -1 downto 0);
     -- Control data
     type state is (INIT, LOADCONF, WAITFORMSG, LOADINGMSG, STARTCALC, CALC, UNLOADANS);
     signal current_state  : state;
@@ -45,13 +45,13 @@ architecture circuit of RSACore is
     signal count          : std_logic;
     -- Config registers
     signal config_reg_en   : std_logic;
-    signal e_r     : std_logic_vector(k-1 downto 0);
-    signal n_r     : std_logic_vector(k-1 downto 0);
-    signal r_r     : std_logic_vector(k-1 downto 0);
-    signal r_2_r   : std_logic_vector(k-1 downto 0);
+    signal e_r     : std_logic_vector(msg_length_bits-1 downto 0);
+    signal n_r     : std_logic_vector(msg_length_bits-1 downto 0);
+    signal r_r     : std_logic_vector(msg_length_bits-1 downto 0);
+    signal r_2_r   : std_logic_vector(msg_length_bits-1 downto 0);
     -- Message registers
     signal M_reg_en : std_logic;
-    signal M_r      : std_logic_vector(k-1 downto 0);
+    signal M_r      : std_logic_vector(msg_length_bits-1 downto 0);
     -- Output registers
     signal result_r        : std_logic_vector(127 downto 0);
     Signal output_reg_en   : std_logic;

@@ -19,18 +19,18 @@ architecture bahavioral of MonExp_tb is
     constant CLK_PERIOD : time := 10ns;
     constant RESET_TIME : time := 10ns;
 
-    constant k : integer := 128;
+    constant msg_length_bits : integer := 128;
 
     signal clk         : std_logic := '0';
     signal resetn      : std_logic := '0';
     signal start       : std_logic;
-    signal M           : std_logic_vector(k -1 downto 0);
-    signal e           : std_logic_vector(k -1 downto 0);
-    signal n           : std_logic_vector(k -1 downto 0);
-    signal r           : std_logic_vector(k -1 downto 0);
-    signal r_2         : std_logic_vector(k -1 downto 0);
+    signal M           : std_logic_vector(msg_length_bits -1 downto 0);
+    signal e           : std_logic_vector(msg_length_bits -1 downto 0);
+    signal n           : std_logic_vector(msg_length_bits -1 downto 0);
+    signal r           : std_logic_vector(msg_length_bits -1 downto 0);
+    signal r_2         : std_logic_vector(msg_length_bits -1 downto 0);
     signal done        : std_logic;
-    signal output      : std_logic_vector(k -1 downto 0);
+    signal output      : std_logic_vector(msg_length_bits -1 downto 0);
 
 
     -- File input
