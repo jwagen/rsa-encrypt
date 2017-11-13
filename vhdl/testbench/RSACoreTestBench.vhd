@@ -125,6 +125,8 @@ begin
     variable s1: string(1 downto 1);  
     variable s32: string(W_BLOCK/4 downto 1);      
     variable s64: string(2*W_BLOCK/4 downto 1);          
+		variable error_counter : integer := 0;
+		variable test_counter : integer := 0;
   begin  
     if (Resetn = '0') then
     
@@ -259,16 +261,19 @@ begin
                             
         -- Verify result
         when e_VERIFY_RESULT => 
-          assert Result = CipherText
+					test_counter := test_counter + 1;
+					if(Result /= CipherText) then
             report "Result differs from expected result"
             severity Error;
+						error_counter := error_counter + 1;
+					end if;
           CryptoState <= e_TEST_FINISHED;             
                        
         -- End testbench
         when others => -- e_TEST_FINISHED;
           if (endfile(ComFile)) then              
             assert true;
-              report "Finished"
+              report "Finished " & integer'image(test_counter) & " tests with " & integer'image(error_counter) & " errors"
               severity Failure;                 
           else
             CryptoState <= e_IDLE;                                            
